@@ -76,7 +76,7 @@ mp.parse(new Uint8Array([145, 36, 0]));
 
 The events ```key-pressure``` and ```channel-pressure``` are commonly known as _Poly Aftertouch_ and _Aftertouch_ respectively in the MIDI world.
 
-The MidiParser class also provides convenient stanard General Midi 1 (GM1) note -> name, drum note -> name, program number -> name and program number -> family name static mappings. Those can be accessed as shown:
+The MidiParser class also provides convenient standard General Midi 1 (GM1) note -> name, drum note -> name, program number -> name and program number -> family name static mappings. For example:
 
 ```javascript
 var mp = new MidiParser();
