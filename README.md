@@ -46,9 +46,6 @@ mp.on('pitch-wheel', function (channel, position) {
 mp.on('sustain-off', function (channel) {
     console.log('Damper Pedal released on channel %d', channel);
 });
-mp.on('sustain-off', function (channel) {
-    console.log('Damper Pedal released on channel %d', channel);
-});
 mp.on('sustain-on', function (channel) {
     console.log('Damper Pedal pressed on channel %d', channel);
 });
