@@ -3,7 +3,7 @@ MIDI Utilities for JavaScript
 
 This is a very simple collection of MIDI data utilities for JavaScript. They are meant to work with raw MIDI data (e.g. bytes), not with MIDI devices themselves. These libraries do not depend on any 3rd-party library so far.
 
-For connecting to MIDI devices and receiving/sending MIDI data, I can suggest the very good [node-midi](http://github.com/justinlatimer/node-midi) library for Node.
+For connecting to MIDI devices and receiving/sending MIDI data, I can suggest the very good [node-midi](http://github.com/justinlatimer/node-midi) Node library. Check it out!
 
 For using any of the libraries, you simply need to include the relevant JavaScript file into your HTML page (or 'require' it if using Node). For example:
 
@@ -44,12 +44,12 @@ mp.parse(new Uint8Array([177, 64, 127]));
 mp.parse(new Uint8Array([145, 36, 0]));
 ```
 
-**Note:** this parser handles the special case of a 'note-on' with velocity 0 as a 'note-off' event, this way you do not need to worry about semantics. See the third example test event.
+**Note:** this parser handles the special case of a ```note-on``` with velocity = 0 as a ```note-off``` event, this way you do not need to worry about semantics. See the third example test event.
 
 MidiDamperPedal class
 ---------------------
 
-A very simple event-driven Midi Damper Pedal processor for JavaScript. This class emulates a Damper Pedal behaviour by controlling the passage of Note On and Note Off messages. When the pedal is pressed, Note Off messages are held until the pedal is released, then they are all replayed back. This class works like an event filter designed to easily work together with the MidiParser class, however you can use it standalone too. See usage example:
+A very simple event-driven Midi Damper Pedal processor for JavaScript. This class emulates the behaviour of a Damper Pedal by controlling the passage of ```note-on``` and ```note-off``` messages. When the pedal is pressed, ```note-off``` messages are held until the pedal is released, then they are all replayed back. This class works like an event filter designed to easily work together with the MidiParser class, however you can use it standalone too. See usage example:
 
 ```javascript
 // First the MidiDamperPedal
@@ -110,7 +110,7 @@ var colorMaps = mc.getColorMaps();
 
 // Set a particular combination of the above
 mc.setColorMapper('color-map');
-mc.setColorMap('jameson1884');
+mc.setColorMap('jameson1884'); // use the 'id' attribute given with getColorMaps()
 
 // Some mapper algorithms work over note ranges
 // Standard 88-keys piano range: 0x15 <= note <= 0x6C
@@ -118,7 +118,7 @@ mc.setNoteMin(0x15);
 mc.setNoteMax(0x6C);
 
 // Then map some colors to some notes
-// Hint: some mapper algorithms consider the velocity value
+// Hint: some mapping algorithms consider the velocity value too
 // RGB stands for (red,green,blue) and HSL for (hue,saturation,lightness)
 var col1 = mc.mapNoteRGB(0x18, 0x64); // arguments: note, velocity
 var col2 = mc.mapNoteHSL(0x18, 0x7F);
@@ -126,14 +126,14 @@ var col2 = mc.mapNoteHSL(0x18, 0x7F);
 
 The available color mapping algorithms are as follows:
 
-* ```color-map```: map colors according to the set color map, scaling lightness according to the velocity of the note.
-* ```color-map-fixed```: the same as the above, but a fixed lightness instead of velocity-based lightness.
-* ```rainbow```: map colors according to a generated rainbow coloring pattern, scaling lightness according to the velocity of the note. It maps the rainbow range according to the set min/max note values. The color map setting has no effect with this algorithm.
-* ```rainbow-fixed```: the same as the above, but use a fixed lightness instead of velocity-based lightness.
+* ```color-map```: map colors according to the configured color map. The lightness is scaled according to the velocity value of the note.
+* ```color-map-fixed```: same as the above, but a fixed lightness is used instead of a velocity-based lightness.
+* ```rainbow```: map colors according to a generated rainbow coloring pattern. The lightness is scaled according to the velocity value of the note. This algorithm maps the rainbow range according to the configured min/max note values. The color map setting has no effect.
+* ```rainbow-fixed```: same as the above, but a fixed lightness is used instead of a velocity-based lightness.
 
-More information about the color maps can be found in [this website](http://rhythmiclight.com/archives/ideas/colorscales.html).
+More information about the color maps can be found in [this website](http://rhythmiclight.com/archives/ideas/colorscales.html). These color scales were transcribed by [this work](http://mudcu.be/midi-js/js/MusicTheory.Synesthesia.js). Thanks for that!
 
 Acknowledgements
 ----------------
 
-Many thanks go to my excellent beta tester friend and pianist Mario Arias (@2xMcK). You can see him performing in [this video](http://youtu.be/MI8koEcOBh0) and also in [this video](http://youtu.be/-pT2aPDNLjI). Kudos for all the feedback!
+Many thanks go to my excellent beta tester friend and pianist Mario Arias ([@2xMcK](http://github.com/2xMcK)). You can see him performing in [this video](http://youtu.be/MI8koEcOBh0) and also in [this video](http://youtu.be/-pT2aPDNLjI). Kudos for all the feedback!
