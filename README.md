@@ -33,7 +33,7 @@ mp.on('sustain-on', function (channel) {
 mp.on('sustain-off', function (channel) {
     console.log('Damper Pedal released on channel %d', channel);
 });
-mp.on('unknown', function(byte1, byte2, byte3) {
+mp.on('unknown', function (byte1, byte2, byte3) {
     console.log('Unknown event with bytes [%d, %d, %d].',
         byte1, byte2, byte3);
 });
@@ -82,7 +82,7 @@ mp.on('sustain-on', function (channel) {
 mp.on('sustain-off', function (channel) {
     mdp.release(channel);
 });
-mp.on('unknown', function(byte1, byte2, byte3) {
+mp.on('unknown', function (byte1, byte2, byte3) {
     console.log('Unknown event with bytes [%d, %d, %d].',
         byte1, byte2, byte3);
 });
