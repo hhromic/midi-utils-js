@@ -44,7 +44,7 @@ mp.parse(new Uint8Array([177, 64, 127]));
 mp.parse(new Uint8Array([145, 36, 0]));
 ```
 
-Note: this parser handles the special case of a 'note-on' with velocity 0 as a 'note-off' event, this way you do not need to worry about semantics. See the third example test event.
+**Note:** this parser handles the special case of a 'note-on' with velocity 0 as a 'note-off' event, this way you do not need to worry about semantics. See the third example test event.
 
 MidiDamperPedal class
 ---------------------
@@ -113,16 +113,15 @@ mc.setColorMapper('color-map');
 mc.setColorMap('jameson1884');
 
 // Some mapper algorithms work over note ranges
-// Standard piano range: 0x15 <= note <= 0x6C
+// Standard 88-keys piano range: 0x15 <= note <= 0x6C
 mc.setNoteMin(0x15);
 mc.setNoteMax(0x6C);
 
 // Then map some colors to some notes
 // Hint: some mapper algorithms consider the velocity value
 // RGB stands for (red,green,blue) and HSL for (hue,saturation,lightness)
-var col1 = mc.mapNoteRGB(0x18, 0x64);
+var col1 = mc.mapNoteRGB(0x18, 0x64); // arguments: note, velocity
 var col2 = mc.mapNoteHSL(0x18, 0x7F);
-
 ```
 
 The available color mapping algorithms are as follows:
@@ -133,3 +132,8 @@ The available color mapping algorithms are as follows:
 * ```rainbow-fixed```: the same as the above, but use a fixed lightness instead of velocity-based lightness.
 
 More information about the color maps can be found in [this website](http://rhythmiclight.com/archives/ideas/colorscales.html).
+
+Acknowledgements
+----------------
+
+Many thanks go to my excellent beta tester friend and pianist Mario Arias (@2xMcK). You can see him performing in [this video](http://youtu.be/MI8koEcOBh0) and also in [this video](http://youtu.be/-pT2aPDNLjI). Kudos for all the feedback!
