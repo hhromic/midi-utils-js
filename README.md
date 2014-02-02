@@ -16,7 +16,7 @@ For using any of the libraries, you simply need to include the relevant JavaScri
 MidiParser class
 ----------------
 
-A very simple event-driven Midi messages parser for JavaScript. This class parses raw MIDI bytes arrays and generates relevant higher-level MIDI events. You must add your own event handlers for it to do anything useful. The following example illustrates all events that can be handled in the current version:
+A very simple event-driven Midi messages parser for JavaScript. This class parses raw MIDI bytes arrays (must be ```Uint8Array``` objects) and generates relevant higher-level MIDI events. You must add your own event handlers for it to do anything useful. The following example illustrates all events that can be handled in the current version:
 
 ```javascript
 var mp = new MidiParser();
