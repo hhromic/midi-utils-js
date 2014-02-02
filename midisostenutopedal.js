@@ -21,6 +21,7 @@
             this._pedals[i] = {
                 pressed: false,
                 prePedalNotes: Object.create(noteSlots),
+                pedalNotes: Object.create(noteSlots),
                 heldNotes: Object.create(noteSlots)
             };
         }
@@ -73,6 +74,9 @@
         if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = true;
+        for (var note in this._pedals[channel].prePedalNotes)
+            if (this._pedals[channel].prePedalNotes[note])
+                this._pedals[channel].pedalNotes[note] = true;
         this.emit('sostenuto-on', channel);
         return true;
     }
@@ -82,7 +86,8 @@
         if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = false;
-        for (var note in this._pedals[channel].heldNotes) {
+        for (var note in this._pedals[channel].pedalNotes) {
+            this._pedals[channel].pedalNotes[note] = false;
             if (this._pedals[channel].heldNotes[note]) {
                 this._pedals[channel].heldNotes[note] = false;
                 this.emit('note-off', channel, note);
@@ -96,9 +101,8 @@
     proto.noteOn = function (channel, note, velocity) {
         if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F || velocity < 0x00 || velocity > 0x7F)
             return false;
-        if (!this._pedals[channel].pressed)
-            this._pedals[channel].prePedalNotes[note] = true;
-        if (this._pedals[channel].heldNotes[note])
+        this._pedals[channel].prePedalNotes[note] = true;
+        if (this._pedals[channel].pressed)
             this._pedals[channel].heldNotes[note] = false;
         this.emit('note-on', channel, note, velocity);
         return true;
@@ -108,16 +112,11 @@
     proto.noteOff = function (channel, note) {
         if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F)
             return false;
-        if (this._pedals[channel].pressed) {
-            if (this._pedals[channel].prePedalNotes[note])
-                this._pedals[channel].heldNotes[note] = true;
-            else
-                this.emit('note-off', channel, note);
-        }
-        else {
-            this._pedals[channel].prePedalNotes[note] = false;
+        this._pedals[channel].prePedalNotes[note] = false;
+        if (this._pedals[channel].pressed && this._pedals[channel].pedalNotes[note])
+            this._pedals[channel].heldNotes[note] = true;
+        else
             this.emit('note-off', channel, note);
-        }
         return true;
     }
 
