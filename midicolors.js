@@ -16,7 +16,7 @@
             var origColor = instance._colorMapCache[note];
             return {
                 h: origColor.h, s: origColor.s,
-                l: (velocity / 127) * origColor.l
+                l: (velocity / 0x7F) * origColor.l
             };
         },
         'color-map-fixed': function (instance, note, velocity) {
@@ -26,7 +26,7 @@
             return {
                 h: (note - instance._noteMin ) *
                     (360 / (instance._noteMax - instance._noteMin + 1)),
-                s: 1, l: (velocity / 127) * 0.50
+                s: 1, l: (velocity / 0x7F) * 0.50
             };
         },
         'rainbow-fixed': function (instance, note, velocity) {
@@ -351,8 +351,8 @@
     function MidiColors() {
         this._colorMapper = _getKeys(_colorMappers)[0];
         this._colorMapCache = _genColorMapCache(_getKeys(_colorMaps)[0]);
-        this._noteMin = 0;
-        this._noteMax = 127;
+        this._noteMin = 0x00;
+        this._noteMax = 0x7F;
     }
 
     // Cache variable for prototype
@@ -393,7 +393,7 @@
 
     // Set the minimum note number
     proto.setNoteMin = function (note) {
-        if (note < 0 || note > this._noteMax)
+        if (note < 0x00 || note > this._noteMax)
             return false;
         this._noteMin = note;
         return true;
@@ -401,7 +401,7 @@
 
     // Set the maximum note number
     proto.setNoteMax = function (note) {
-        if (note < this._noteMin || note > 127)
+        if (note < this._noteMin || note > 0x7F)
             return false;
         this._noteMax = note;
         return true;
@@ -414,7 +414,7 @@
 
     // Maps a color (HSL) to a note according to set mapper algorithm (and color map)
     proto.mapNoteHSL = function (note, velocity) {
-        if (note < this._noteMin || note > this._noteMax || velocity < 0 || velocity > 127)
+        if (note < this._noteMin || note > this._noteMax || velocity < 0x00 || velocity > 0x7F)
             return {h: 0, s:0, l:0}
         return _colorMappers[this._colorMapper](this, note, velocity);
     }

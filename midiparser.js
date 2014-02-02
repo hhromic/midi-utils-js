@@ -71,7 +71,7 @@
                     if (bytes.length > 2) {
                         var note = bytes[1] & 0x7F;
                         var velocity = bytes[2] & 0x7F;
-                        if (velocity > 0)
+                        if (velocity > 0x00)
                             this.emit('note-on', channel, note, velocity);
                         else
                             this.emit('note-off', channel, note);
@@ -83,7 +83,7 @@
                         var value = bytes[2] & 0x7F;
                         switch (control) {
                             case 0x40: // Damper Pedal (Sustain)
-                                if (value < 64)
+                                if (value < 0x40)
                                     this.emit('sustain-off', channel);
                                 else
                                     this.emit('sustain-on', channel);

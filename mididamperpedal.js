@@ -69,7 +69,7 @@
 
     // Simulate pressing the damper pedal
     proto.press = function (channel) {
-        if (channel < 0 || channel > 15)
+        if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = true;
         this.emit('sustain-on', channel);
@@ -78,7 +78,7 @@
 
     // Simulate releasing the damper pedal
     proto.release = function (channel) {
-        if (channel < 0 || channel > 15)
+        if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = false;
         for (var note in this._pedals[channel].heldNotes) {
@@ -93,7 +93,7 @@
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
-        if (channel < 0 || channel > 15 || note < 0 || note > 127 || velocity < 0 || velocity > 127)
+        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F || velocity < 0x00 || velocity > 0x7F)
             return false;
         if (this._pedals[channel].heldNotes[note])
             this._pedals[channel].heldNotes[note] = false;
@@ -103,7 +103,7 @@
 
     // Process a Midi Note Off message
     proto.noteOff = function (channel, note) {
-        if (channel < 0 || channel > 15 || note < 0 || note > 127)
+        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F)
             return false;
         if (this._pedals[channel].pressed)
             this._pedals[channel].heldNotes[note] = true;
