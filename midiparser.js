@@ -58,19 +58,19 @@
     // Parse the bytes of a Midi message and emit parsing events
     proto.parse = function (bytes) {
         if (bytes instanceof Uint8Array && bytes.length > 0) {
-            var status = bytes[0] & 0x0000000f0;
-            var channel = bytes[0] & 0x0000000f;
+            var status = bytes[0] & 0xF0;
+            var channel = bytes[0] & 0x0F;
             switch (status) {
                 case 0x80: // Note-off
                     if (bytes.length > 1) {
-                        var note = bytes[1];
+                        var note = bytes[1] & 0x7F;
                         this.emit('note-off', channel, note);
                     }
                     break;
                 case 0x90: // Note-on
                     if (bytes.length > 2) {
-                        var note = bytes[1];
-                        var velocity = bytes[2];
+                        var note = bytes[1] & 0x7F;
+                        var velocity = bytes[2] & 0x7F;
                         if (velocity > 0)
                             this.emit('note-on', channel, note, velocity);
                         else
@@ -79,8 +79,8 @@
                     break;
                 case 0xB0: // Control Change (CC)
                     if (bytes.length > 2) {
-                        var control = bytes[1];
-                        var value = bytes[2];
+                        var control = bytes[1] & 0x7F;
+                        var value = bytes[2] & 0x7F;
                         switch (control) {
                             case 0x40: // Damper Pedal (Sustain)
                                 if (value < 64)
