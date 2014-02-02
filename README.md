@@ -20,18 +20,49 @@ A very simple event-driven Midi messages parser for JavaScript. This class parse
 
 ```javascript
 var mp = new MidiParser();
+mp.on('note-off', function (channel, note) {
+    console.log('Note-Off on channel %d. Note: %d', channel, note);
+});
 mp.on('note-on', function (channel, note, velocity) {
     console.log('Note-On on channel %d. Note %d with velocity %d',
         channel, note, velocity);
 });
-mp.on('note-off', function (channel, note) {
-    console.log('Note-Off on channel %d. Note %d.', channel, note);
+mp.on('key-pressure', function (channel, note, pressure) {
+    console.log('Key pressure on channel %d. Note %d with pressure %d',
+        channel, note, pressure);
+});
+mp.on('program-change', function (channel, number) {
+    console.log('Program Change on channel %d. Number: %d',
+        channel, number);
+});
+mp.on('channel-pressure', function (channel, pressure) {
+    console.log('Channel pressure on channel %d. Pressure %d',
+        channel, pressure);
+});
+mp.on('pitch-wheel', function (channel, position) {
+    console.log('Pitch Wheel on channel %d. Position: %d',
+        channel, position);
+});
+mp.on('sustain-off', function (channel) {
+    console.log('Damper Pedal released on channel %d', channel);
+});
+mp.on('sustain-off', function (channel) {
+    console.log('Damper Pedal released on channel %d', channel);
 });
 mp.on('sustain-on', function (channel) {
     console.log('Damper Pedal pressed on channel %d', channel);
 });
-mp.on('sustain-off', function (channel) {
-    console.log('Damper Pedal released on channel %d', channel);
+mp.on('sostenuto-off', function (channel) {
+    console.log('Sostenuto Pedal released on channel %d', channel);
+});
+mp.on('sostenuto-on', function (channel) {
+    console.log('Sostenuto Pedal pressed on channel %d', channel);
+});
+mp.on('soft-off', function (channel) {
+    console.log('Soft Pedal released on channel %d', channel);
+});
+mp.on('soft-on', function (channel) {
+    console.log('Soft Pedal pressed on channel %d', channel);
 });
 mp.on('unknown', function (byte1, byte2, byte3) {
     console.log('Unknown event with bytes [%d, %d, %d].',
@@ -45,6 +76,8 @@ mp.parse(new Uint8Array([145, 36, 0]));
 ```
 
 **Note:** this parser handles the special case of a ```note-on``` with velocity = 0 as a ```note-off``` event, this way you do not need to worry about semantics. See the third example test event.
+
+The events ```key-pressure``` and ```channel-pressure``` are commonly known as _Poly Aftertouch_ and _Aftertouch_ respectively in the MIDI world.
 
 MidiDamperPedal class
 ---------------------

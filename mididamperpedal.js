@@ -26,10 +26,10 @@
 
         // Setup event handlers
         this._handlers = {
-            'note-on': undefined,
-            'note-off': undefined,
-            'sustain-on': undefined,
-            'sustain-off': undefined
+            'note-off': undefined,     // channel, note
+            'note-on': undefined,      // channel, note, velocity
+            'sustain-off': undefined,  // channel
+            'sustain-on': undefined    // channel
         };
     }
 
