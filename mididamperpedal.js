@@ -38,8 +38,11 @@
 
     // Assign an event handler to a pedalling event
     proto.on = function (event, handler) {
-        if (typeof handler === 'function' && this._handlers.hasOwnProperty(event))
+        if (typeof handler === 'function' && this._handlers.hasOwnProperty(event)) {
             this._handlers[event] = handler;
+            return true;
+        }
+        return false;
     }
 
     // Emit pedalling events
@@ -57,22 +60,26 @@
                     this._handlers[event](data1, data2, data3);
                     break;
                 default:
+                    return false;
             }
+            return true;
         }
+        return false;
     }
 
     // Simulate pressing the damper pedal
     proto.press = function (channel) {
         if (channel < 0 || channel > 15)
-            return;
+            return false;
         this._pedals[channel].pressed = true;
         this.emit('sustain-on', channel);
+        return true;
     }
 
     // Simulate releasing the damper pedal
     proto.release = function (channel) {
         if (channel < 0 || channel > 15)
-            return;
+            return false;
         this._pedals[channel].pressed = false;
         for (var note in this._pedals[channel].heldNotes) {
             if (this._pedals[channel].heldNotes[note]) {
@@ -81,25 +88,28 @@
             }
         }
         this.emit('sustain-off', channel);
+        return true;
     }
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
         if (channel < 0 || channel > 15 || note < 0 || note > 127 || velocity < 0 || velocity > 127)
-            return;
+            return false;
         if (this._pedals[channel].heldNotes[note])
             this._pedals[channel].heldNotes[note] = false;
         this.emit('note-on', channel, note, velocity);
+        return true;
     }
 
     // Process a Midi Note Off message
     proto.noteOff = function (channel, note) {
         if (channel < 0 || channel > 15 || note < 0 || note > 127)
-            return;
+            return false;
         if (this._pedals[channel].pressed)
             this._pedals[channel].heldNotes[note] = true;
         else
             this.emit('note-off', channel, note);
+        return true;
     }
 
     // Expose the class either via AMD, CommonJS or the global object

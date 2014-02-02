@@ -25,8 +25,11 @@
 
     // Assign an event handler to a parsing event
     proto.on = function (event, handler) {
-        if (typeof handler === 'function' && this._handlers.hasOwnProperty(event))
+        if (typeof handler === 'function' && this._handlers.hasOwnProperty(event)) {
             this._handlers[event] = handler;
+            return true;
+        }
+        return false;
     }
 
     // Emit parsing events
@@ -45,8 +48,11 @@
                     this._handlers[event](data1, data2, data3);
                     break;
                 default:
+                    return false;
             }
+            return true;
         }
+        return false;
     }
 
     // Parse the bytes of a Midi message and emit parsing events
