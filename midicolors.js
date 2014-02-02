@@ -367,7 +367,7 @@
     proto.setColorMapper = function (colorMapper) {
         if (_colorMappers.hasOwnProperty(colorMapper)) {
             this._colorMapper = colorMapper;
-             return true;
+            return true;
         }
         return false;
     }

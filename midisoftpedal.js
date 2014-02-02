@@ -1,5 +1,5 @@
 /**
- * MidiDamperPedal v1.0 - A very simple event-driven Midi Damper Pedal processor for JavaScript.
+ * MidiSoftPedal v1.0 - A very simple event-driven Midi Soft Pedal processor for JavaScript.
  * Hugo Hromic - http://github.com/hhromic
  * MIT license
  */
@@ -9,32 +9,35 @@
     'use strict';
 
     // Constructor
-    function MidiDamperPedal() {
-        // Create a note slots object to be cloned
-        var noteSlots = [];
-        for (var i=0; i<128; i++)
-            noteSlots[i] = false;
+    function MidiSoftPedal() {
+        this._softenFactor = 2/3;
 
         // Create internal pedals state object
         this._pedals = [];
-        for (var i=0; i<16; i++) {
+        for (var i=0; i<16; i++)
             this._pedals[i] = {
-                pressed: false,
-                heldNotes: Object.create(noteSlots)
+                pressed: false
             };
-        }
 
         // Setup event handlers
         this._handlers = {
-            'note-off': undefined,     // channel, note
-            'note-on': undefined,      // channel, note, velocity
-            'sustain-off': undefined,  // channel
-            'sustain-on': undefined    // channel
+            'note-on': undefined,   // channel, note, velocity
+            'soft-off': undefined,  // channel
+            'soft-on': undefined    // channel
         };
     }
 
     // Cache variable for prototype
-    var proto = MidiDamperPedal.prototype;
+    var proto = MidiSoftPedal.prototype;
+
+    // Set the soften factor [0,1] for the pedal
+    proto.setSoftenFactor = function (softenFactor) {
+        if (softenFactor >= 0 && softenFactor <= 1) {
+            this._softenFactor = softenFactor;
+            return true;
+        }
+        return false;
+    }
 
     // Assign an event handler to a pedalling event
     proto.on = function (event, handler) {
@@ -49,8 +52,8 @@
     proto.emit = function (event, data1, data2, data3) {
         if (this._handlers.hasOwnProperty(event) && this._handlers[event] !== undefined) {
             switch (event) {
-                case 'sustain-off':
-                case 'sustain-on':
+                case 'soft-off':
+                case 'soft-on':
                     this._handlers[event](data1);
                     break;
                 case 'note-off':
@@ -67,27 +70,21 @@
         return false;
     }
 
-    // Simulate pressing the damper pedal
+    // Simulate pressing the soft pedal
     proto.press = function (channel) {
         if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = true;
-        this.emit('sustain-on', channel);
+        this.emit('soft-on', channel);
         return true;
     }
 
-    // Simulate releasing the damper pedal
+    // Simulate releasing the soft pedal
     proto.release = function (channel) {
         if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = false;
-        for (var note in this._pedals[channel].heldNotes) {
-            if (this._pedals[channel].heldNotes[note]) {
-                this._pedals[channel].heldNotes[note] = false;
-                this.emit('note-off', channel, note);
-            }
-        }
-        this.emit('sustain-off', channel);
+        this.emit('soft-off', channel);
         return true;
     }
 
@@ -95,33 +92,22 @@
     proto.noteOn = function (channel, note, velocity) {
         if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F || velocity < 0x00 || velocity > 0x7F)
             return false;
-        if (this._pedals[channel].heldNotes[note])
-            this._pedals[channel].heldNotes[note] = false;
-        this.emit('note-on', channel, note, velocity);
-        return true;
-    }
-
-    // Process a Midi Note Off message
-    proto.noteOff = function (channel, note) {
-        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F)
-            return false;
         if (this._pedals[channel].pressed)
-            this._pedals[channel].heldNotes[note] = true;
-        else
-            this.emit('note-off', channel, note);
+            velocity = Math.round(velocity * this._softenFactor);
+        this.emit('note-on', channel, note, velocity);
         return true;
     }
 
     // Expose the class either via AMD, CommonJS or the global object
     if (typeof define === 'function' && define.amd) {
         define(function () {
-            return MidiDamperPedal;
+            return MidiSoftPedal;
         });
     }
     else if (typeof module === 'object' && module.exports) {
-        module.exports = MidiDamperPedal;
+        module.exports = MidiSoftPedal;
     }
     else {
-        this.MidiDamperPedal = MidiDamperPedal;
+        this.MidiSoftPedal = MidiSoftPedal;
     }
 }.call(this));

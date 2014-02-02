@@ -79,38 +79,40 @@ The events ```key-pressure``` and ```channel-pressure``` are commonly known as _
 MidiDamperPedal class
 ---------------------
 
-A very simple event-driven Midi Damper Pedal processor for JavaScript. This class emulates the behaviour of a Damper Pedal by controlling the passage of ```note-on``` and ```note-off``` messages. When the pedal is pressed, ```note-off``` messages are held until the pedal is released, then they are all replayed back. This class works like an event filter designed to easily work together with the MidiParser class, however you can use it standalone too. See usage example:
+A very simple event-driven Midi Damper Pedal processor for JavaScript. This class emulates the behaviour of a Damper Pedal by controlling the passage of ```note-on``` and ```note-off``` messages. This pedal's working is detailed in [this Wikipedia article](http://en.wikipedia.org/wiki/Sustain_pedal).
+
+When the pedal is pressed, ```note-off``` messages are held until the pedal is released, then they are all replayed back. This class works like an event filter designed to easily work together with the MidiParser or other pedal processing classes, however you can use it standalone too. See usage example:
 
 ```javascript
 // First the MidiDamperPedal
 var mdp = new MidiDamperPedal();
+mdp.on('note-off', function (channel, note) {
+    console.log('Note-Off on channel %d. Note %d.', channel, note);
+});
 mdp.on('note-on', function (channel, note, velocity) {
     console.log('Note-On on channel %d. Note %d with velocity %d',
         channel, note, velocity);
 });
-mdp.on('note-off', function (channel, note) {
-    console.log('Note-Off on channel %d. Note %d.', channel, note);
+mdp.on('sustain-off', function (channel) {
+    console.log('Damper Pedal released on channel %d', channel);
 });
 mdp.on('sustain-on', function (channel) {
     console.log('Damper Pedal pressed on channel %d', channel);
 });
-mdp.on('sustain-off', function (channel) {
-    console.log('Damper Pedal released on channel %d', channel);
-});
 
 // Now the MidiParser and redirect events to the damper pedal
 var mp = new MidiParser();
-mp.on('note-on', function (channel, note, velocity) {
-    mdp.noteOn(channel, note, velocity);
-});
 mp.on('note-off', function (channel, note) {
     mdp.noteOff(channel, note);
 });
-mp.on('sustain-on', function (channel) {
-    mdp.press(channel);
+mp.on('note-on', function (channel, note, velocity) {
+    mdp.noteOn(channel, note, velocity);
 });
 mp.on('sustain-off', function (channel) {
     mdp.release(channel);
+});
+mp.on('sustain-on', function (channel) {
+    mdp.press(channel);
 });
 mp.on('unknown', function (byte1, byte2, byte3) {
     console.log('Unknown event with bytes [%d, %d, %d].',
@@ -125,6 +127,112 @@ mp.parse(new Uint8Array([144, 36, 90]));
 mp.parse(new Uint8Array([144, 36, 0]));
 mp.parse(new Uint8Array([176, 64, 0]));
 ```
+
+MidiSostenutoPedal class
+---------------------
+
+A very simple event-driven Midi Sostenuto Pedal processor for JavaScript. This class emulates the behaviour of a Sostenuto Pedal by controlling the passage of ```note-on``` and ```note-off``` messages. This pedal is detailed in [this Wikipedia article](http://en.wikipedia.org/wiki/Sostenuto).
+
+When the pedal is depressed, ```note-on``` messages without a corresponding ```note-off``` are remembered until the pedal is pressed (pre-pedal held notes). Then, all further ```note-off``` messages are passed except for those of the pre-pedal notes, which are held. When the pedal is released, all the held ```note-off``` messages are replayed back. This class works like an event filter designed to easily work together with the MidiParser or other pedal processing classes, however you can use it standalone too. See usage example:
+
+```javascript
+// First the MidiSostenutoPedal
+var msp = new MidiSostenutoPedal();
+msp.on('note-on', function (channel, note, velocity) {
+    console.log('Note-On on channel %d. Note %d with velocity %d',
+        channel, note, velocity);
+});
+msp.off('note-on', function (channel, note, velocity) {
+    console.log('Note-Off on channel %d. Note %d.', channel, note);
+});
+msp.on('sostenuto-off', function (channel) {
+    console.log('Sostenuto Pedal released on channel %d', channel);
+});
+msp.on('sostenuto-on', function (channel) {
+    console.log('Sostenuto Pedal pressed on channel %d', channel);
+});
+
+// Now the MidiParser and redirect events to the sostenuto pedal
+var mp = new MidiParser();
+mp.on('note-off', function (channel, note) {
+    msp.noteOff(channel, note);
+});
+mp.on('note-on', function (channel, note, velocity) {
+    msp.noteOn(channel, note, velocity);
+});
+mp.on('soft-off', function (channel) {
+    msp.release(channel);
+});
+mp.on('soft-on', function (channel) {
+    msp.press(channel);
+});
+mp.on('unknown', function (byte1, byte2, byte3) {
+    console.log('Unknown event with bytes [%d, %d, %d].',
+        byte1, byte2, byte3);
+});
+
+// Test some events, check the order of sostenuto pedal emitted events
+mp.parse(new Uint8Array([144, 24, 100]));
+mp.parse(new Uint8Array([176, 66, 127]));
+mp.parse(new Uint8Array([144, 24, 0]));
+mp.parse(new Uint8Array([144, 36, 90]));
+mp.parse(new Uint8Array([144, 36, 0]));
+mp.parse(new Uint8Array([176, 66, 0]));
+```
+
+MidiSoftPedal class
+---------------------
+
+A very simple event-driven Midi Soft Pedal processor for JavaScript. This class emulates the behaviour of a Soft Pedal by controlling the passage of ```note-on``` messages. This pedal is detailed in [this Wikipedia article](http://en.wikipedia.org/wiki/Soft_pedal).
+
+When the pedal is pressed, all velocities of incoming ```note-on``` messages are scaled using a ```softenFactor``` setting (defaulted to 2/3). This class works like an event filter designed to easily work together with the MidiParser or other pedal processing classes, however you can use it standalone too. See usage example:
+
+```javascript
+// First the MidiSoftPedal
+var msp = new MidiSoftPedal();
+msp.setSoftenFactor(0.5); // Optionally set a custom soften factor
+msp.on('note-on', function (channel, note, velocity) {
+    console.log('Note-On on channel %d. Note %d with velocity %d',
+        channel, note, velocity);
+});
+msp.on('soft-off', function (channel) {
+    console.log('Soft Pedal released on channel %d', channel);
+});
+msp.on('soft-on', function (channel) {
+    console.log('Soft Pedal pressed on channel %d', channel);
+});
+
+// Now the MidiParser and redirect events to the soft pedal
+var mp = new MidiParser();
+mp.on('note-off', function (channel, note) {
+    console.log('Note-Off on channel %d. Note %d.', channel, note);
+});
+mp.on('note-on', function (channel, note, velocity) {
+    msp.noteOn(channel, note, velocity);
+});
+mp.on('soft-off', function (channel) {
+    msp.release(channel);
+});
+mp.on('soft-on', function (channel) {
+    msp.press(channel);
+});
+mp.on('unknown', function (byte1, byte2, byte3) {
+    console.log('Unknown event with bytes [%d, %d, %d].',
+        byte1, byte2, byte3);
+});
+
+// Test some events, check the velocity values of soft pedal emitted events
+mp.parse(new Uint8Array([144, 24, 100]));
+mp.parse(new Uint8Array([144, 24, 0]));
+mp.parse(new Uint8Array([176, 67, 127]));
+mp.parse(new Uint8Array([144, 24, 100]));
+mp.parse(new Uint8Array([144, 24, 0]));
+mp.parse(new Uint8Array([176, 67, 0]));
+mp.parse(new Uint8Array([144, 24, 100]));
+mp.parse(new Uint8Array([144, 24, 0]));
+```
+
+**Note:** the ```note-on``` event from the soft pedal will have the modified velocities if the pedal is pressed.
 
 MidiColors class
 ----------------
