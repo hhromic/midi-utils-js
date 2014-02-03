@@ -258,7 +258,7 @@ var colorMaps = mc.getColorMaps();
 
 // Set a particular combination of the above
 mc.setColorMapper('color-map');
-mc.setColorMap('jameson1884'); // use the 'id' attribute given with getColorMaps()
+mc.setColorMap('jameson1884'); // use the 'id' attribute given by getColorMaps()
 
 // Some mapper algorithms work over note ranges
 // Standard 88-keys piano range: 0x15 <= note <= 0x6C
