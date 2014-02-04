@@ -10,7 +10,10 @@ For using any of the libraries, you simply need to include the relevant JavaScri
 ```html
 <script src="midiparser.js"></script>
 <script src="mididamperpedal.js"></script>
+<script src="midisostenutopedal.js"></script>
+<script src="midisoftpedal.js"></script>
 <script src="midicolors.js"></script>
+<script src="midiledscontroller.js"></script>
 ```
 
 MidiParser class
@@ -280,6 +283,47 @@ The available color mapping algorithms are as follows:
 * ```rainbow-fixed```: same as the above, but a fixed lightness is used instead of a velocity-based lightness.
 
 More information about the color maps can be found in [this website](http://rhythmiclight.com/archives/ideas/colorscales.html). These color scales were transcribed by [this work](http://mudcu.be/midi-js/js/MusicTheory.Synesthesia.js). Thanks for that!
+
+MidiLedsController class
+------------------------
+
+A very simple MIDI to RGB LED strip controller for JavaScript. This class computes RGB values for a strip of LEDs using MIDI ```note-on``` and ````note-off``` messages together with two respective MidiColors instances. The controller also can apply a note offset to each input ```note-on``` and configure a velocity to be used for ```note-off``` events.  Please see the following example usage:
+
+```javascript
+// First some MidiColors mappings
+var mcNoteOn = new MidiColors();
+var mcNoteOff = new MidiColors();
+mcNoteOn.setNoteMin(0x15); mcNoteOff.setNoteMin(0x15);  // 88-keys
+mcNoteOn.setNoteMax(0x6C); mcNoteOff.setNoteMax(0x6C);  // piano setting
+mcNoteOn.setColorMapper('rainbow');   // Let's try a rainbow effect
+mcNoteOff.setColorMapper('rainbow');  // If OffVelocity=0, this doesn't matter
+
+// Second the MidiLedsController with basic raw console output
+var mlc = new MidiLedsController(88, mcNoteOn, mcNoteOff);
+mlc.setNoteOffset(0x15);   // Minimum note for an 88-keys piano
+mlc.setOffVelocity(0x0A);  // If >0x00: LEDs will be 'off' with dimmed light
+mlc.on('led-output', function (led, r, g, b) {
+    console.log('LED %d is now R=%d, G=%d, B=%d.', led, r, g, b);
+    // Your real RGB LED strip can be driven here...
+});
+
+// Finally a MidiParser to send some events (pedals can be added too!)
+var mp = new MidiParser();
+mp.on('note-on', function (channel, note, velocity) {
+    mlc.noteOn(channel, note, velocity);
+});
+mp.on('note-off', function (channel, note) {
+    mlc.noteOff(channel, note);
+});
+
+// Test some events, check the LEDs output values
+mp.parse(new Uint8Array([144, 30, 100]));
+mp.parse(new Uint8Array([144, 60, 80]));
+mp.parse(new Uint8Array([144, 90, 127]));
+mp.parse(new Uint8Array([144, 30, 0]));
+mp.parse(new Uint8Array([144, 60, 0]));
+mp.parse(new Uint8Array([144, 90, 0]));
+```
 
 Acknowledgements
 ----------------
