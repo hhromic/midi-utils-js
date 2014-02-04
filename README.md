@@ -287,7 +287,7 @@ More information about the color maps can be found in [this website](http://rhyt
 MidiLedsController class
 ------------------------
 
-A very simple MIDI to RGB LED strip controller for JavaScript. This class computes RGB values for a strip of LEDs using MIDI ```note-on``` and ````note-off``` messages together with two respective MidiColors instances. The controller also can apply a note offset to each input ```note-on``` and configure a velocity to be used for ```note-off``` events.  Please see the following example usage:
+A very simple MIDI to RGB LED strip controller for JavaScript. This class computes RGB values for a strip of LEDs using MIDI ```note-on``` and ```note-off``` messages using two respective MidiColors instances. The controller also can apply a note offset to each input ```note-on``` and configure a velocity to be used for ```note-off``` events.  Please see the following example usage:
 
 ```javascript
 // First some MidiColors mappings
@@ -298,7 +298,7 @@ mcNoteOn.setNoteMax(0x6C); mcNoteOff.setNoteMax(0x6C);  // piano setting
 mcNoteOn.setColorMapper('rainbow');   // Let's try a rainbow effect
 mcNoteOff.setColorMapper('rainbow');  // If OffVelocity=0, this doesn't matter
 
-// Second the MidiLedsController with basic raw console output
+// Second, the MidiLedsController with basic raw console output
 var mlc = new MidiLedsController(88, mcNoteOn, mcNoteOff);
 mlc.setNoteOffset(0x15);   // Minimum note for an 88-keys piano
 mlc.setOffVelocity(0x0A);  // If >0x00: LEDs will be 'off' with dimmed light
