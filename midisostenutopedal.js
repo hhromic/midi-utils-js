@@ -10,6 +10,8 @@
 
     // Constructor
     function MidiSostenutoPedal() {
+        EventEmitter.call(this);
+
         // Create a note slots object to be cloned
         var noteSlots = [];
         for (var i=0; i<128; i++)
@@ -25,49 +27,13 @@
                 heldNotes: Object.create(noteSlots)
             };
         }
-
-        // Setup event handlers
-        this._handlers = {
-            'note-off': undefined,       // channel, note
-            'note-on': undefined,        // channel, note, velocity
-            'sostenuto-off': undefined,  // channel
-            'sostenuto-on': undefined    // channel
-        };
     }
 
-    // Cache variable for prototype
+    // We are an event emitter
+    MidiSostenutoPedal.prototype = Object.create(EventEmitter.prototype);
+
+    // Prototype shortcut
     var proto = MidiSostenutoPedal.prototype;
-
-    // Assign an event handler to a pedalling event
-    proto.on = function (event, handler) {
-        if (typeof handler === 'function' && this._handlers.hasOwnProperty(event)) {
-            this._handlers[event] = handler;
-            return true;
-        }
-        return false;
-    }
-
-    // Emit pedalling events
-    proto.emit = function (event, data1, data2, data3) {
-        if (this._handlers.hasOwnProperty(event) && this._handlers[event] !== undefined) {
-            switch (event) {
-                case 'sostenuto-off':
-                case 'sostenuto-on':
-                    this._handlers[event](data1);
-                    break;
-                case 'note-off':
-                    this._handlers[event](data1, data2);
-                    break;
-                case 'note-on':
-                    this._handlers[event](data1, data2, data3);
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        }
-        return false;
-    }
 
     // Simulate pressing the sostenuto pedal
     proto.press = function (channel) {
@@ -120,7 +86,7 @@
         return true;
     }
 
-    // Expose the class either via AMD, CommonJS or the global object
+    // Expose either via AMD, CommonJS or the global object
     if (typeof define === 'function' && define.amd) {
         define(function () {
             return MidiSostenutoPedal;

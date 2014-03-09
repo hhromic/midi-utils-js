@@ -345,25 +345,13 @@
 
     // Constructor
     function MidiParser() {
-        // Setup event handlers
-        this._handlers = {
-            'note-off': undefined,          // channel, note
-            'note-on': undefined,           // channel, note, velocity
-            'key-pressure': undefined,      // channel, note, pressure
-            'program-change': undefined,    // channel, number
-            'channel-pressure': undefined,  // channel, pressure
-            'pitch-wheel': undefined,       // channel, position
-            'sustain-off': undefined,       // channel
-            'sustain-on': undefined,        // channel
-            'sostenuto-off': undefined,     // channel
-            'sostenuto-on': undefined,      // channel
-            'soft-off': undefined,          // channel
-            'soft-on': undefined,           // channel
-            'unknown': undefined            // byte1, byte2, byte3
-        };
+        EventEmitter.call(this);
     }
 
-    // Cache variable for prototype
+    // We are an event emitter
+    MidiParser.prototype = Object.create(EventEmitter.prototype);
+
+    // Prototype shortcut
     var proto = MidiParser.prototype;
 
     // Get a GM1 drum note name
@@ -384,46 +372,6 @@
     // Get a GM1 program name
     proto.getGM1ProgramName = function (progNumber) {
         return _gm1programs[progNumber];
-    }
-
-    // Assign an event handler to a parsing event
-    proto.on = function (event, handler) {
-        if (typeof handler === 'function' && this._handlers.hasOwnProperty(event)) {
-            this._handlers[event] = handler;
-            return true;
-        }
-        return false;
-    }
-
-    // Emit parsing events
-    proto.emit = function (event, data1, data2, data3) {
-        if (this._handlers.hasOwnProperty(event) && this._handlers[event] !== undefined) {
-            switch (event) {
-                case 'sustain-off':
-                case 'sustain-on':
-                case 'sostenuto-off':
-                case 'sostenuto-on':
-                case 'soft-off':
-                case 'soft-on':
-                    this._handlers[event](data1);
-                    break;
-                case 'note-off':
-                case 'program-change':
-                case 'channel-pressure':
-                case 'pitch-wheel':
-                    this._handlers[event](data1, data2);
-                    break;
-                case 'note-on':
-                case 'key-pressure':
-                case 'unknown':
-                    this._handlers[event](data1, data2, data3);
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        }
-        return false;
     }
 
     // Parse the bytes of a Midi message and emit parsing events
@@ -508,7 +456,7 @@
         }
     }
 
-    // Expose the class either via AMD, CommonJS or the global object
+    // Expose either via AMD, CommonJS or the global object
     if (typeof define === 'function' && define.amd) {
         define(function () {
             return MidiParser;
