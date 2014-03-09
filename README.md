@@ -16,6 +16,23 @@ For using any of the libraries, you simply need to include the relevant JavaScri
 <script src="midiledscontroller.js"></script>
 ```
 
+Please note that most of the classes are *event emitters* and rely on an existing EventEmitter object implementation to inherit/use. For example if you want to use the MidiParser:
+
+* If using Node, this object comes built-in and can be easily used like this:
+
+```javascript
+var EventEmitter = require('events').EventEmitter;
+var MidiParser = require('./midiparser');
+var mp = new MidiParser();
+```
+
+* If using the browser or other environments, you can use the very good ([EventEmitter](http://github.com/Wolfy87/EventEmitter)) from Oliver Caldwell ([Wolfy87](http://github.com/Wolfy87)) by simply loading it before any other class in this package:
+
+```html
+<script src="eventemitter.min.js"></script>
+<script src="midiparser.js"></script>
+```
+
 MidiParser class
 ----------------
 
