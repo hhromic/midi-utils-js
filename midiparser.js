@@ -410,9 +410,9 @@
                         switch (control) {
                             case 0x40: // Damper Pedal (Sustain)
                                 if (value < 0x40)
-                                    this.emit('sustain-off', channel);
+                                    this.emit('damper-off', channel);
                                 else
-                                    this.emit('sustain-on', channel);
+                                    this.emit('damper-on', channel);
                                 break;
                             case 0x42: // Sostenuto Pedal
                                 if (value < 0x40)

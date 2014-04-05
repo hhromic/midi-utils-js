@@ -63,10 +63,10 @@ mp.on('pitch-wheel', function (channel, position) {
     console.log('Pitch Wheel on channel %d. Position: %d',
         channel, position);
 });
-mp.on('sustain-off', function (channel) {
+mp.on('damper-off', function (channel) {
     console.log('Damper Pedal released on channel %d', channel);
 });
-mp.on('sustain-on', function (channel) {
+mp.on('damper-on', function (channel) {
     console.log('Damper Pedal pressed on channel %d', channel);
 });
 mp.on('sostenuto-off', function (channel) {
@@ -123,10 +123,10 @@ mdp.on('note-on', function (channel, note, velocity) {
     console.log('Note-On on channel %d. Note %d with velocity %d',
         channel, note, velocity);
 });
-mdp.on('sustain-off', function (channel) {
+mdp.on('damper-off', function (channel) {
     console.log('Damper Pedal released on channel %d', channel);
 });
-mdp.on('sustain-on', function (channel) {
+mdp.on('damper-on', function (channel) {
     console.log('Damper Pedal pressed on channel %d', channel);
 });
 
@@ -138,10 +138,10 @@ mp.on('note-off', function (channel, note) {
 mp.on('note-on', function (channel, note, velocity) {
     mdp.noteOn(channel, note, velocity);
 });
-mp.on('sustain-off', function (channel) {
+mp.on('damper-off', function (channel) {
     mdp.release(channel);
 });
-mp.on('sustain-on', function (channel) {
+mp.on('damper-on', function (channel) {
     mdp.press(channel);
 });
 mp.on('unknown', function (byte1, byte2, byte3) {

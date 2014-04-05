@@ -38,7 +38,7 @@
         if (channel < 0x0 || channel > 0xF)
             return false;
         this._pedals[channel].pressed = true;
-        this.emit('sustain-on', channel);
+        this.emit('damper-on', channel);
         return true;
     }
 
@@ -53,7 +53,7 @@
                 this.emit('note-off', channel, note);
             }
         }
-        this.emit('sustain-off', channel);
+        this.emit('damper-off', channel);
         return true;
     }
 
