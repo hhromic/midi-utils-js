@@ -52,6 +52,22 @@
         [[51, 192, 225], [96, 220, 143], [122, 207, 145], [176, 230, 130], [214, 240, 125], [231, 232, 217], [231, 225, 110], [0, 240, 158], [0, 245, 250], [20, 238, 248], [44, 110, 240], [42, 192, 245]] // zieverink2004
     ];
 
+    // ADSR envelope object
+    var _adsrEnvelope = {
+        time: 0,
+        state: 'IDLE',
+        target: 0.0,
+        output: 0.0,
+        attackRate: 0.0,
+        decayStart: 0.0,
+        decayRate: 0.0,
+        sustainLevel: 0.0,
+        releaseStart: 0.0,
+        releaseRate: 0.0,
+        releaseTime: 0,
+        hsv8: [0x00, 0x00, 0x00],
+    };
+
     // Convert HSV (8-bits) to RGB
     // Taken (& adapted) from: http://stackoverflow.com/a/17243070
     function _hsv8ToRgb(hsv8) {
@@ -79,12 +95,14 @@
         this._noteMax = noteMax;
         this._numLeds = noteMax - noteMin + 1;
         this._canvas = undefined;
-        this._envelopes = new Object(null);
 
-        // Initialise leds array
+        // Initialise leds and envelopes array
         this._leds = new Array();
-        for (var i=0; i<this._numLeds; i++)
+        this._envelopes = new Array();
+        for (var i=0; i<this._numLeds; i++) {
             this._leds.push(0x0);
+            this._envelopes.push(Object.create(_adsrEnvelope));
+        }
 
         // Initialise controllers state
         this.resetAllControllers();
@@ -120,46 +138,44 @@
     // Process a Note-On event
     proto.noteOn = function (note, velocity) {
         if (note >= this._noteMin && note <= this._noteMax) {
-            if (!(note in this._envelopes))
-                this._envelopes[note] = {
-                    time: 0,
-                    state: 'ATTACK',
-                    target: 1.0,
-                    output: 0.0,
-                    attackRate: 1.0 / this.attackTime,
-                    decayStart: 0.0,
-                    decayRate: (1.0 - this.sustainLevel) / this.decayTime,
-                    sustainLevel: this.sustainLevel,
-                    releaseStart: 0.0,
-                    releaseRate: 0.0,
-                    releaseTime: this.releaseTime,
-                    hsv8: _colorMappers[this.colorMapper](this, note,
-                              this.ignoreVelocity ? 0x7F : velocity),
-                };
-
-            // Re-trigger the note
-            this._envelopes[note].time = 0;
-            this._envelopes[note].state = 'ATTACK';
-            this._envelopes[note].target = 1.0;
+            var envelope = this._envelopes[note - this._noteMin];
+            if (envelope.state == 'IDLE') {
+                envelope.output = 0.0;
+                envelope.attackRate = 1.0 / this.attackTime;
+                envelope.decayStart = 0.0;
+                envelope.decayRate = (1.0 - this.sustainLevel) / this.decayTime;
+                envelope.sustainLevel = this.sustainLevel;
+                envelope.releaseStart = 0.0;
+                envelope.releaseRate = 0.0;
+                envelope.releaseTime = this.releaseTime;
+                envelope.hsv8 = _colorMappers[this.colorMapper](this, note,
+                    this.ignoreVelocity ? 0x7F : velocity);
+            }
+            envelope.time = 0;
+            envelope.state = 'ATTACK';
+            envelope.target = 1.0;
         }
     }
 
     // Process a Note-Off event
     proto.noteOff = function (note) {
-        if (note >= this._noteMin && note <= this._noteMax)
-            if (note in this._envelopes) {
-                this._envelopes[note].time = 0;
-                this._envelopes[note].state = 'RELEASE';
-                this._envelopes[note].target = 0.0;
-                this._envelopes[note].releaseStart = this._envelopes[note].output;
-                this._envelopes[note].releaseRate =
-                    this._envelopes[note].releaseStart / this._envelopes[note].releaseTime;
+        if (note >= this._noteMin && note <= this._noteMax) {
+            var envelope = this._envelopes[note - this._noteMin];
+            if (envelope.state != 'IDLE') {
+                envelope.time = 0;
+                envelope.state = 'RELEASE';
+                envelope.target = 0.0;
+                envelope.releaseStart = envelope.output;
+                envelope.releaseRate = envelope.releaseStart / envelope.releaseTime;
             }
+        }
     }
 
     // Turn all Leds off
     proto.allLedsOff = function () {
-        this._envelopes.splice();
+        this._envelopes.forEach(function (envelope) {
+            envelope.state = 'IDLE';
+        });
         this._leds.forEach(function (led, index, array) {
             array[index] = 0x0;
         });
@@ -180,9 +196,7 @@
     // Process a clock tick signal
     // ADSR taken (& adapted) from: https://github.com/thestk/stk/blob/master/src/ADSR.cpp
     proto.tick = function (time) {
-        for (var note in this._envelopes) {
-            var envelope = this._envelopes[note];
-
+        this._envelopes.forEach(function (envelope, index) {
             // Envelope timing
             if (envelope.time == 0)
                 envelope.time = time;
@@ -190,6 +204,8 @@
 
             // Envelope state
             switch (envelope.state) {
+                case 'IDLE':
+                    return true;
                 case 'ATTACK':
                     if (isFinite(envelope.attackRate))
                         envelope.output = envelopeTime * envelope.attackRate;
@@ -214,7 +230,7 @@
                     break;
                 case 'SUSTAIN':
                     envelope.time = 0;
-                    continue;
+                    return true;
                 case 'RELEASE':
                     if (isFinite(envelope.releaseRate))
                         envelope.output = envelope.releaseStart - (envelopeTime * envelope.releaseRate);
@@ -231,13 +247,8 @@
             var brightness = Math.round(envelope.hsv8[2] * envelope.output);
             if (brightness < this.baseBrightness)
                 brightness = this.baseBrightness;
-            this._leds[note - this._noteMin] =
-                (envelope.hsv8[0] << 16) + (envelope.hsv8[1] << 8) + brightness;
-
-            // Envelope ready to be dropped?
-            if (envelope.state == 'IDLE')
-                delete this._envelopes[note];
-        }
+            this._leds[index] = (envelope.hsv8[0] << 16) + (envelope.hsv8[1] << 8) + brightness;
+        }, this);
         this._show();
     }
 
