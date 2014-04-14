@@ -139,21 +139,16 @@
     proto.noteOn = function (note, velocity) {
         if (note >= this._noteMin && note <= this._noteMax) {
             var envelope = this._envelopes[note - this._noteMin];
-            if (envelope.state == 'IDLE') {
-                envelope.output = 0.0;
-                envelope.attackRate = 1.0 / this.attackTime;
-                envelope.decayStart = 0.0;
-                envelope.decayRate = (1.0 - this.sustainLevel) / this.decayTime;
-                envelope.sustainLevel = this.sustainLevel;
-                envelope.releaseStart = 0.0;
-                envelope.releaseRate = 0.0;
-                envelope.releaseTime = this.releaseTime;
-                envelope.hsv8 = _colorMappers[this.colorMapper](this, note,
-                    this.ignoreVelocity ? 0x7F : velocity);
-            }
             envelope.time = 0;
             envelope.state = 'ATTACK';
             envelope.target = 1.0;
+            envelope.output = 0.0;
+            envelope.attackRate = 1.0 / this.attackTime;
+            envelope.decayRate = (1.0 - this.sustainLevel) / this.decayTime;
+            envelope.sustainLevel = this.sustainLevel;
+            envelope.releaseTime = this.releaseTime;
+            envelope.hsv8 = _colorMappers[this.colorMapper](this, note,
+                this.ignoreVelocity ? 0x7F : velocity);
         }
     }
 
