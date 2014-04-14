@@ -13,7 +13,7 @@ For using any of the libraries, you simply need to include the relevant JavaScri
 <script src="midisostenutopedal.js"></script>
 <script src="midisoftpedal.js"></script>
 <script src="midicolors.js"></script>
-<script src="midiledscontroller.js"></script>
+<script src="midileds.js"></script>
 ```
 
 Please note that most of the classes are *event emitters* and rely on an existing EventEmitter object implementation to inherit/use. For example if you want to use the MidiParser:
@@ -301,8 +301,8 @@ The available color mapping algorithms are as follows:
 
 More information about the color maps can be found in [this website](http://rhythmiclight.com/archives/ideas/colorscales.html). These color scales were transcribed by [this work](http://mudcu.be/midi-js/js/MusicTheory.Synesthesia.js). Thanks for that!
 
-MidiLedsController class
-------------------------
+MidiLeds class
+--------------
 
 A very simple MIDI to RGB LED strip controller for JavaScript. This class computes RGB values for a strip of LEDs using MIDI ```note-on``` and ```note-off``` messages using two respective MidiColors instances. The controller also can apply a note offset to each input ```note-on``` and configure a velocity to be used for ```note-off``` events.  Please see the following example usage:
 

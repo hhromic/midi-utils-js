@@ -127,6 +127,7 @@
                     target: 1.0,
                     output: 0.0,
                     attackRate: 1.0 / this.attackTime,
+                    decayStart: 0.0,
                     decayRate: (1.0 - this.sustainLevel) / this.decayTime,
                     sustainLevel: this.sustainLevel,
                     releaseStart: 0.0,
@@ -158,7 +159,7 @@
 
     // Turn all Leds off
     proto.allLedsOff = function () {
-        this._envelopesQueue.splice();
+        this._envelopes.splice();
         this._leds.forEach(function (led, index, array) {
             array[index] = 0x0;
         });
@@ -180,7 +181,6 @@
     // ADSR taken (& adapted) from: https://github.com/thestk/stk/blob/master/src/ADSR.cpp
     proto.tick = function (time) {
         for (var note in this._envelopes) {
-            //console.log('Note ' + note);
             var envelope = this._envelopes[note];
 
             // Envelope timing
@@ -198,12 +198,13 @@
                         envelope.output = envelope.target;
                         envelope.time = 0;
                         envelope.state = 'DECAY';
+                        envelope.decayStart = envelope.target;
                         envelope.target = envelope.sustainLevel;
                     }
                     break;
                 case 'DECAY':
                     if (isFinite(envelope.decayRate))
-                        envelope.output = 1.0 - (envelopeTime * envelope.decayRate);
+                        envelope.output = envelope.decayStart - (envelopeTime * envelope.decayRate);
                     else envelope.output = envelope.target;
                     if (envelope.output <= envelope.target) {
                         envelope.output = envelope.target;
