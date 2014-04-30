@@ -37,53 +37,39 @@
 
     // Simulate pressing the sostenuto pedal
     proto.press = function (channel) {
-        if (channel < 0x0 || channel > 0xF)
-            return false;
-        this._pedals[channel].pressed = true;
-        for (var note in this._pedals[channel].prePedalNotes)
-            if (this._pedals[channel].prePedalNotes[note])
-                this._pedals[channel].pedalNotes[note] = true;
-        this.emit('sostenuto-on', channel);
-        return true;
+        this._pedals[channel & 0xF].pressed = true;
+        for (var note in this._pedals[channel & 0xF].prePedalNotes)
+            if (this._pedals[channel & 0xF].prePedalNotes[note])
+                this._pedals[channel & 0xF].pedalNotes[note] = true;
     }
 
     // Simulate releasing the sostenuto pedal
     proto.release = function (channel) {
-        if (channel < 0x0 || channel > 0xF)
-            return false;
-        this._pedals[channel].pressed = false;
-        for (var note in this._pedals[channel].pedalNotes) {
-            this._pedals[channel].pedalNotes[note] = false;
-            if (this._pedals[channel].heldNotes[note]) {
-                this._pedals[channel].heldNotes[note] = false;
+        this._pedals[channel & 0xF].pressed = false;
+        for (var note in this._pedals[channel & 0xF].pedalNotes) {
+            this._pedals[channel & 0xF].pedalNotes[note] = false;
+            if (this._pedals[channel & 0xF].heldNotes[note]) {
+                this._pedals[channel & 0xF].heldNotes[note] = false;
                 this.emit('note-off', channel, note);
             }
         }
-        this.emit('sostenuto-off', channel);
-        return true;
     }
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
-        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F || velocity < 0x00 || velocity > 0x7F)
-            return false;
-        this._pedals[channel].prePedalNotes[note] = true;
-        if (this._pedals[channel].pressed)
-            this._pedals[channel].heldNotes[note] = false;
+        this._pedals[channel & 0xF].prePedalNotes[note & 0x7F] = true;
+        if (this._pedals[channel & 0xF].pressed)
+            this._pedals[channel & 0xF].heldNotes[note & 0x7F] = false;
         this.emit('note-on', channel, note, velocity);
-        return true;
     }
 
     // Process a Midi Note Off message
     proto.noteOff = function (channel, note) {
-        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F)
-            return false;
-        this._pedals[channel].prePedalNotes[note] = false;
-        if (this._pedals[channel].pressed && this._pedals[channel].pedalNotes[note])
-            this._pedals[channel].heldNotes[note] = true;
+        this._pedals[channel & 0xF].prePedalNotes[note & 0x7F] = false;
+        if (this._pedals[channel & 0xF].pressed && this._pedals[channel & 0xF].pedalNotes[note & 0x7F])
+            this._pedals[channel & 0xF].heldNotes[note & 0x7F] = true;
         else
             this.emit('note-off', channel, note);
-        return true;
     }
 
     // Expose either via AMD, CommonJS or the global object

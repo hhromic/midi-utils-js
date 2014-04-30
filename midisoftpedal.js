@@ -31,39 +31,25 @@
 
     // Set the soften factor [0,1] for the pedal
     proto.setSoftenFactor = function (softenFactor) {
-        if (softenFactor >= 0 && softenFactor <= 1) {
+        if (softenFactor >= 0 && softenFactor <= 1)
             this._softenFactor = softenFactor;
-            return true;
-        }
-        return false;
     }
 
     // Simulate pressing the soft pedal
     proto.press = function (channel) {
-        if (channel < 0x0 || channel > 0xF)
-            return false;
-        this._pedals[channel].pressed = true;
-        this.emit('soft-on', channel);
-        return true;
+        this._pedals[channel & 0xF].pressed = true;
     }
 
     // Simulate releasing the soft pedal
     proto.release = function (channel) {
-        if (channel < 0x0 || channel > 0xF)
-            return false;
-        this._pedals[channel].pressed = false;
-        this.emit('soft-off', channel);
-        return true;
+        this._pedals[channel & 0xF].pressed = false;
     }
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
-        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F || velocity < 0x00 || velocity > 0x7F)
-            return false;
-        if (this._pedals[channel].pressed)
-            velocity = Math.round(velocity * this._softenFactor);
+        if (this._pedals[channel & 0xF].pressed)
+            velocity = Math.round((velocity & 0x7F) * this._softenFactor);
         this.emit('note-on', channel, note, velocity);
-        return true;
     }
 
     // Expose either via AMD, CommonJS or the global object

@@ -35,47 +35,33 @@
 
     // Simulate pressing the damper pedal
     proto.press = function (channel) {
-        if (channel < 0x0 || channel > 0xF)
-            return false;
-        this._pedals[channel].pressed = true;
-        this.emit('damper-on', channel);
-        return true;
+        this._pedals[channel & 0xF].pressed = true;
     }
 
     // Simulate releasing the damper pedal
     proto.release = function (channel) {
-        if (channel < 0x0 || channel > 0xF)
-            return false;
-        this._pedals[channel].pressed = false;
+        this._pedals[channel & 0xF].pressed = false;
         for (var note in this._pedals[channel].heldNotes) {
-            if (this._pedals[channel].heldNotes[note]) {
-                this._pedals[channel].heldNotes[note] = false;
+            if (this._pedals[channel & 0xF].heldNotes[note]) {
+                this._pedals[channel & 0xF].heldNotes[note] = false;
                 this.emit('note-off', channel, note);
             }
         }
-        this.emit('damper-off', channel);
-        return true;
     }
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
-        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F || velocity < 0x00 || velocity > 0x7F)
-            return false;
-        if (this._pedals[channel].heldNotes[note])
-            this._pedals[channel].heldNotes[note] = false;
+        if (this._pedals[channel & 0xF].heldNotes[note & 0x7F])
+            this._pedals[channel & 0xF].heldNotes[note & 0x7F] = false;
         this.emit('note-on', channel, note, velocity);
-        return true;
     }
 
     // Process a Midi Note Off message
     proto.noteOff = function (channel, note) {
-        if (channel < 0x0 || channel > 0xF || note < 0x00 || note > 0x7F)
-            return false;
-        if (this._pedals[channel].pressed)
-            this._pedals[channel].heldNotes[note] = true;
+        if (this._pedals[channel & 0xF].pressed)
+            this._pedals[channel & 0xF].heldNotes[note & 0x7F] = true;
         else
             this.emit('note-off', channel, note);
-        return true;
     }
 
     // Expose either via AMD, CommonJS or the global object
