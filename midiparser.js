@@ -632,7 +632,7 @@
                     }
                     break;
                 default:
-                    this.emit('unknown-event', bytes[1], bytes[2], bytes[3]);
+                    this.emit('unknown-message', bytes);
             }
         }
     }
