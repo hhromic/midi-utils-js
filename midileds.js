@@ -10,13 +10,14 @@
 
     // Default settings
     var _defaults = {
-        attackTime: 1000, // in milliseconds
+        attackTime: 80, // in milliseconds
         decayTime: 3000, // in milliseconds
-        sustainLevel: 0.5, // 0..1 (float)
-        releaseTime: 500, // in milliseconds
+        sustainLevel: 0.0, // 0..1 (float)
+        releaseTime: 400, // in milliseconds
         colorMapper: 0, // 0..1
-        noteColorMap: 0, // 0..12
-        ignoreVelocity: false,
+        noteColorMap: 8, // 0..12
+        fixedHue: 0x00,
+        ignoreVelocity: true,
         baseBrightness: 0x00, // 0x00..0xFF
     };
 
@@ -31,6 +32,9 @@
                 Math.round((note - instance._noteMin) * (0xFF / instance._numLeds)),
                 0xFF, Math.round((velocity / 0x7F) * 0xFF)
             ];
+        },
+        function (instance, note, velocity) { // Fixed hue based
+            return [instance.fixedHue, 0xFF, Math.round((velocity / 0x7F) * 0xFF)];
         }
     ];
 
@@ -105,6 +109,7 @@
         }
 
         // Initialise controllers state
+        this.allNotesOff();
         this.resetAllControllers();
     }
 
@@ -167,7 +172,7 @@
     }
 
     // Turn all Leds off
-    proto.allLedsOff = function () {
+    proto.allNotesOff = function () {
         this._envelopes.forEach(function (envelope) {
             envelope.state = 'IDLE';
         });
@@ -184,6 +189,7 @@
         this.releaseTime = _defaults.releaseTime;
         this.colorMapper = _defaults.colorMapper;
         this.noteColorMap = _defaults.noteColorMap;
+        this.fixedHue = _defaults.fixedHue;
         this.ignoreVelocity = _defaults.ignoreVelocity;
         this.baseBrightness = _defaults.baseBrightness;
     }
