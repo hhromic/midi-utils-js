@@ -109,8 +109,8 @@
         }
 
         // Initialise controllers state
-        this.allNotesOff();
-        this.resetAllControllers();
+        this.allLedsOff();
+        this.reset();
     }
 
     // Prototype shortcut
