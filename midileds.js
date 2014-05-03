@@ -172,7 +172,7 @@
     }
 
     // Turn all Leds off
-    proto.allNotesOff = function () {
+    proto.allLedsOff = function () {
         this._envelopes.forEach(function (envelope) {
             envelope.state = 'IDLE';
         });
@@ -182,7 +182,7 @@
     }
 
     // Reset color mappers and ADSR envelope values
-    proto.resetAllControllers = function () {
+    proto.reset = function () {
         this.attackTime = _defaults.attackTime;
         this.decayTime = _defaults.decayTime;
         this.sustainLevel = _defaults.sustainLevel;
