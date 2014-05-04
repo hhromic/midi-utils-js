@@ -197,7 +197,7 @@
     // Process a clock tick signal
     // ADSR taken (& adapted) from: https://github.com/thestk/stk/blob/master/src/ADSR.cpp
     proto.tick = function (time) {
-        this._envelopes.forEach(function (envelope, index) {
+        this._envelopes.every(function (envelope, index) {
             // Envelope timing
             if (envelope.time == 0)
                 envelope.time = time;
@@ -249,6 +249,7 @@
             if (brightness < this.baseBrightness)
                 brightness = this.baseBrightness;
             this._leds[index] = (envelope.hsv8[0] << 16) + (envelope.hsv8[1] << 8) + brightness;
+            return true;
         }, this);
         this._show();
     }
