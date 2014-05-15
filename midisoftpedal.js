@@ -11,16 +11,8 @@
     // Constructor
     function MidiSoftPedal() {
         EventEmitter.call(this);
-
-        // Default soften factor value
         this._softenFactor = 2/3;
-
-        // Create internal pedals state object
-        this._pedals = [];
-        for (var i=0; i<16; i++)
-            this._pedals[i] = {
-                pressed: false
-            };
+        this._pressed = 0x0000;
     }
 
     // We are an event emitter
@@ -37,18 +29,18 @@
 
     // Simulate pressing the soft pedal
     proto.press = function (channel) {
-        this._pedals[channel & 0xF].pressed = true;
+        this._pressed |= 1 << (channel & 0xF);
     }
 
     // Simulate releasing the soft pedal
     proto.release = function (channel) {
-        this._pedals[channel & 0xF].pressed = false;
+        this._pressed &= ~(1 << (channel & 0xF));
     }
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
-        if (this._pedals[channel & 0xF].pressed)
-            velocity = Math.round((velocity & 0x7F) * this._softenFactor);
+        if ((this._pressed >> (channel & 0xF)) & 1)
+            this.emit('note-on', channel, note, Math.round(velocity * this._softenFactor));
         this.emit('note-on', channel, note, velocity);
     }
 

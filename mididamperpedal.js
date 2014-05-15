@@ -11,20 +11,10 @@
     // Constructor
     function MidiDamperPedal() {
         EventEmitter.call(this);
-
-        // Create a note slots object to be cloned
-        var noteSlots = [];
-        for (var i=0; i<128; i++)
-            noteSlots[i] = false;
-
-        // Create internal pedals state object
-        this._pedals = [];
-        for (var i=0; i<16; i++) {
-            this._pedals[i] = {
-                pressed: false,
-                heldNotes: Object.create(noteSlots)
-            };
-        }
+        this._pressed = 0x0000;
+        this._heldNotes = new Array(16);
+        for (var i=0; i<16; i++)
+            this._heldNotes[i] = new Uint32Array(4);
     }
 
     // We are an event emitter
@@ -35,33 +25,33 @@
 
     // Simulate pressing the damper pedal
     proto.press = function (channel) {
-        this._pedals[channel & 0xF].pressed = true;
+        this._pressed |= 1 << (channel & 0xF);
     }
 
     // Simulate releasing the damper pedal
     proto.release = function (channel) {
-        this._pedals[channel & 0xF].pressed = false;
-        for (var note in this._pedals[channel].heldNotes) {
-            if (this._pedals[channel & 0xF].heldNotes[note]) {
-                this._pedals[channel & 0xF].heldNotes[note] = false;
-                this.emit('note-off', channel, note);
+        this._pressed &= ~(1 << (channel & 0xF));
+        for (var i=0; i<128; i++) { // Send Note Off messages for all channel held notes
+            if ((this._heldNotes[channel & 0xF][i / 32] >> (i % 32)) & 1) {
+                this._heldNotes[channel & 0xF][i / 32] &= ~(1 << (i % 32));
+                this.emit('note-off', channel, i, 0x00);
             }
         }
     }
 
     // Process a Midi Note On message
     proto.noteOn = function (channel, note, velocity) {
-        if (this._pedals[channel & 0xF].heldNotes[note & 0x7F])
-            this._pedals[channel & 0xF].heldNotes[note & 0x7F] = false;
+        if ((this._heldNotes[channel & 0xF][(note & 0x7F) / 32] >> ((note & 0x7F) % 32)) & 1)
+            this._heldNotes[channel & 0xF][(note & 0x7F) / 32] &= ~(1 << ((note & 0x7F) % 32)); // Reset channel held note
         this.emit('note-on', channel, note, velocity);
     }
 
     // Process a Midi Note Off message
-    proto.noteOff = function (channel, note) {
-        if (this._pedals[channel & 0xF].pressed)
-            this._pedals[channel & 0xF].heldNotes[note & 0x7F] = true;
+    proto.noteOff = function (channel, note, velocity) {
+        if ((this._pressed >> (channel & 0xF)) & 1) // If pedal pressed, hold channel Note Off message
+            this._heldNotes[channel & 0xF][(note & 0x7F) / 32] |= 1 << ((note & 0x7F) % 32);
         else
-            this.emit('note-off', channel, note);
+            this.emit('note-off', channel, note, velocity);
     }
 
     // Expose either via AMD, CommonJS or the global object
