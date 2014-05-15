@@ -15,7 +15,7 @@
         this._prePedalNotes = new Array(16);
         this._pedalNotes = new Array(16);
         this._heldNotes = new Array(16);
-        for (var i=0; i<16; i++) {
+        for (var i=16; i--;) {
             this._prePedalNotes[i] = new Uint32Array(4);
             this._pedalNotes[i] = new Uint32Array(4);
             this._heldNotes[i] = new Uint32Array(4);
@@ -31,14 +31,14 @@
     // Simulate pressing the sostenuto pedal
     proto.press = function (channel) {
         this._pressed |= 1 << (channel & 0xF);
-        for (var i=0; i<4; i++) // Transfer all channel pre-pedal notes to pedal notes
+        for (var i=4; i--;) // Transfer all channel pre-pedal notes to pedal notes
             this._pedalNotes[channel & 0xF][i] = this._prePedalNotes[channel & 0xF][i];
     }
 
     // Simulate releasing the sostenuto pedal
     proto.release = function (channel) {
         this._pressed &= ~(1 << (channel & 0xF));
-        for (var i=0; i<128; i++) { // Send Note Off messages for all channel held notes
+        for (var i=128; i--;) { // Send Note Off messages for all channel held notes
             this._pedalNotes[channel & 0xF][i / 32] &= ~(1 << (i % 32)); // Reset channel pedal notes
             if ((this._heldNotes[channel & 0xF][i / 32] >> (i % 32)) & 1) {
                 this._heldNotes[channel & 0xF][i / 32] &= ~(1 << (i % 32));

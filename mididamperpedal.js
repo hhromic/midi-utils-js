@@ -13,7 +13,7 @@
         EventEmitter.call(this);
         this._pressed = 0x0000;
         this._heldNotes = new Array(16);
-        for (var i=0; i<16; i++)
+        for (var i=16; i--;)
             this._heldNotes[i] = new Uint32Array(4);
     }
 
@@ -31,7 +31,7 @@
     // Simulate releasing the damper pedal
     proto.release = function (channel) {
         this._pressed &= ~(1 << (channel & 0xF));
-        for (var i=0; i<128; i++) { // Send Note Off messages for all channel held notes
+        for (var i=128; i--;) { // Send Note Off messages for all channel held notes
             if ((this._heldNotes[channel & 0xF][i / 32] >> (i % 32)) & 1) {
                 this._heldNotes[channel & 0xF][i / 32] &= ~(1 << (i % 32));
                 this.emit('note-off', channel, i, 0x00);
