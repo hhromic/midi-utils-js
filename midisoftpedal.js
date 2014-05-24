@@ -21,6 +21,11 @@
     // Prototype shortcut
     var proto = MidiSoftPedal.prototype;
 
+    // Get the softenf factor for the pedal
+    proto.getSoftenFactor = function () {
+        return this._softenFactor;
+    }
+
     // Set the soften factor [0,1] for the pedal
     proto.setSoftenFactor = function (softenFactor) {
         if (softenFactor >= 0 && softenFactor <= 1)
