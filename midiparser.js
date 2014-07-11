@@ -607,10 +607,9 @@
                             case 0x7B: // All Notes Off
                                 this.emit('all-notes-off', channel);
                                 return;
-                            default:
-                                this.emit('unknown-control-change', channel, control, value);
                         }
                     }
+                    this.emit('unknown-control-change', channel, control, value);
                     return;
                 case 0xC0: // Program Change
                     if (bytes.length > 1) {
@@ -631,9 +630,9 @@
                         this.emit('pitch-bend', channel, (msb << 7) + lsb);
                     }
                     return;
-                default:
-                    this.emit('unknown-message', bytes);
             }
+            this.emit('unknown-message', bytes);
+            return;
         }
     }
 
