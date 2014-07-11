@@ -389,7 +389,7 @@
                         var velocity = bytes[2] & 0x7F;
                         this.emit('note-off', channel, note, velocity);
                     }
-                    break;
+                    return;
                 case 0x90: // Note On event
                     if (bytes.length > 2) {
                         var note = bytes[1] & 0x7F;
@@ -399,14 +399,14 @@
                         else
                             this.emit('note-off', channel, note, velocity);
                     }
-                    break;
+                    return;
                 case 0xA0: // Polyphonic Key Pressure (Aftertouch)
                     if (bytes.length > 2) {
                         var note = bytes[1] & 0x7F;
                         var pressure = bytes[2] & 0x7F;
                         this.emit('key-pressure', channel, note, pressure);
                     }
-                    break;
+                    return;
                 case 0xB0: // Control Change
                     if (bytes.length > 2) {
                         var control = bytes[1] & 0x7F;
@@ -414,223 +414,223 @@
                         switch (control) {
                             case 0x00: // Bank Select (MSB)
                                 this.emit('bank-select', channel, value);
-                                break;
+                                return;
                             case 0x01: // Modulation Wheel (MSB)
                                 this.emit('mod-wheel', channel, value);
-                                break;
+                                return;
                             case 0x02: // Breath Controller (MSB)
                                 this.emit('breath-controller', channel, value);
-                                break;
+                                return;
                             case 0x04: // Foot Controller (MSB)
                                 this.emit('foot-controller', channel, value);
-                                break;
+                                return;
                             case 0x05: // Portamento Time (MSB)
                                 this.emit('portamento-time', channel, value);
-                                break;
+                                return;
                             case 0x07: // Channel Volume (MSB)
                                 this.emit('volume', channel, value);
-                                break;
+                                return;
                             case 0x08: // Balance (MSB)
                                 this.emit('balance', channel, value);
-                                break;
+                                return;
                             case 0x0A: // Pan (MSB)
                                 this.emit('pan', channel, value);
-                                break;
+                                return;
                             case 0x0B: // Expression Controller (MSB)
                                 this.emit('expression-controller', channel, value);
-                                break;
+                                return;
                             case 0x0C: // Effect Control 1 (MSB)
                                 this.emit('effect-control-1', channel, value);
-                                break;
+                                return;
                             case 0x0D: // Effect Control 2 (MSB)
                                 this.emit('effect-control-2', channel, value);
-                                break;
+                                return;
                             case 0x10: // General Purpose Controller 1 (MSB)
                                 this.emit('gp-controller-1', channel, value);
-                                break;
+                                return;
                             case 0x11: // General Purpose Controller 2 (MSB)
                                 this.emit('gp-controller-2', channel, value);
-                                break;
+                                return;
                             case 0x12: // General Purpose Controller 3 (MSB)
                                 this.emit('gp-controller-3', channel, value);
-                                break;
+                                return;
                             case 0x13: // General Purpose Controller 4 (MSB)
                                 this.emit('gp-controller-4', channel, value);
-                                break;
+                                return;
                             case 0x20: // Bank Select (LSB)
                                 this.emit('bank-select-fine', channel, value);
-                                break;
+                                return;
                             case 0x21: // Modulation Wheel (LSB)
                                 this.emit('mod-wheel-fine', channel, value);
-                                break;
+                                return;
                             case 0x22: // Breath Controller (LSB)
                                 this.emit('breath-controller-fine', channel, value);
-                                break;
+                                return;
                             case 0x24: // Foot Controller (LSB)
                                 this.emit('foot-controller-fine', channel, value);
-                                break;
+                                return;
                             case 0x25: // Portamento Time (LSB)
                                 this.emit('portamento-time-fine', channel, value);
-                                break;
+                                return;
                             case 0x27: // Channel Volume (LSB)
                                 this.emit('volume-fine', channel, value);
-                                break;
+                                return;
                             case 0x28: // Balance (LSB)
                                 this.emit('balance-fine', channel, value);
-                                break;
+                                return;
                             case 0x2A: // Pan (LSB)
                                 this.emit('pan-fine', channel, value);
-                                break;
+                                return;
                             case 0x2B: // Expression Controller (LSB)
                                 this.emit('expression-controller-fine', channel, value);
-                                break;
+                                return;
                             case 0x2C: // Effect Control 1 (LSB)
                                 this.emit('effect-control-1-fine', channel, value);
-                                break;
+                                return;
                             case 0x2D: // Effect Control 2 (LSB)
                                 this.emit('effect-control-2-fine', channel, value);
-                                break;
+                                return;
                             case 0x30: // General Purpose Controller 1 (LSB)
                                 this.emit('gp-controller-1-fine', channel, value);
-                                break;
+                                return;
                             case 0x31: // General Purpose Controller 2 (LSB)
                                 this.emit('gp-controller-2-fine', channel, value);
-                                break;
+                                return;
                             case 0x32: // General Purpose Controller 3 (LSB)
                                 this.emit('gp-controller-3-fine', channel, value);
-                                break;
+                                return;
                             case 0x33: // General Purpose Controller 4 (LSB)
                                 this.emit('gp-controller-4-fine', channel, value);
-                                break;
+                                return;
                             case 0x40: // Damper Pedal (Sustain)
                                 if (value < 0x40)
                                     this.emit('damper-off', channel);
                                 else
                                     this.emit('damper-on', channel);
-                                break;
+                                return;
                             case 0x41: // Portamento
                                 if (value < 0x40)
                                     this.emit('portamento-off', channel);
                                 else
                                     this.emit('portamento-on', channel);
-                                break;
+                                return;
                             case 0x42: // Sostenuto
                                 if (value < 0x40)
                                     this.emit('sostenuto-off', channel);
                                 else
                                     this.emit('sostenuto-on', channel);
-                                break;
+                                return;
                             case 0x43: // Soft Pedal
                                 if (value < 0x40)
                                     this.emit('soft-off', channel);
                                 else
                                     this.emit('soft-on', channel);
-                                break;
+                                return;
                             case 0x44: // Legato Footswitch
                                 if (value < 0x40)
                                     this.emit('legato-off', channel);
                                 else
                                     this.emit('legato-on', channel);
-                                break;
+                                return;
                             case 0x45: // Hold 2
                                 if (value < 0x40)
                                     this.emit('hold2-off', channel);
                                 else
                                     this.emit('hold2-on', channel);
-                                break;
+                                return;
                             case 0x46: // Sound Controller 1
                                 this.emit('sound-variation', channel, value);
-                                break;
+                                return;
                             case 0x47: // Sound Controller 2
                                 this.emit('timbre-intensity', channel, value);
-                                break;
+                                return;
                             case 0x48: // Sound Controller 3
                                 this.emit('release-time', channel, value);
-                                break;
+                                return;
                             case 0x49: // Sound Controller 4
                                 this.emit('attack-time', channel, value);
-                                break;
+                                return;
                             case 0x4A: // Sound Controller 5
                                 this.emit('brightness', channel, value);
-                                break;
+                                return;
                             case 0x4B: // Sound Controller 6
                                 this.emit('decay-time', channel, value);
-                                break;
+                                return;
                             case 0x4C: // Sound Controller 7
                                 this.emit('vibrato-rate', channel, value);
-                                break;
+                                return;
                             case 0x4D: // Sound Controller 8
                                 this.emit('vibrato-depth', channel, value);
-                                break;
+                                return;
                             case 0x4E: // Sound Controller 9
                                 this.emit('vibrato-delay', channel, value);
-                                break;
+                                return;
                             case 0x4F: // Sound Controller 10
                                 this.emit('snd-controller-10', channel, value);
-                                break;
+                                return;
                             case 0x50: // General Purpose Controller 5
                                 this.emit('gp-controller-5', channel, value);
-                                break;
+                                return;
                             case 0x51: // General Purpose Controller 6
                                 this.emit('gp-controller-6', channel, value);
-                                break;
+                                return;
                             case 0x52: // General Purpose Controller 7
                                 this.emit('gp-controller-7', channel, value);
-                                break;
+                                return;
                             case 0x53: // General Purpose Controller 8
                                 this.emit('gp-controller-8', channel, value);
-                                break;
+                                return;
                             case 0x54: // Portamento Control
                                 this.emit('portamento', channel, value);
-                                break;
+                                return;
                             case 0x5B: // Effects 1 Depth
                                 this.emit('reverb-depth', channel, value);
-                                break;
+                                return;
                             case 0x5C: // Effects 2 Depth
                                 this.emit('tremolo-depth', channel, value);
-                                break;
+                                return;
                             case 0x5D: // Effects 3 Depth
                                 this.emit('chorus-depth', channel, value);
-                                break;
+                                return;
                             case 0x5E: // Effects 4 Depth
                                 this.emit('detune-depth', channel, value);
-                                break;
+                                return;
                             case 0x5F: // Effects 5 Depth
                                 this.emit('phaser-depth', channel, value);
-                                break;
+                                return;
                             case 0x78: // All Sound Off
                                 this.emit('all-sound-off', channel);
-                                break;
+                                return;
                             case 0x79: // Reset All Controllers
                                 this.emit('reset-all-controllers', channel);
-                                break;
+                                return;
                             case 0x7B: // All Notes Off
                                 this.emit('all-notes-off', channel);
-                                break;
+                                return;
                             default:
                                 this.emit('unknown-control-change', channel, control, value);
                         }
                     }
-                    break;
+                    return;
                 case 0xC0: // Program Change
                     if (bytes.length > 1) {
                         var number = bytes[1] & 0x7F;
                         this.emit('program-change', channel, number);
                     }
-                    break;
+                    return;
                 case 0xD0: // Channel Pressure (After-touch)
                     if (bytes.length > 1) {
                         var pressure = bytes[1] & 0x7F;
                         this.emit('channel-pressure', channel, pressure);
                     }
-                    break;
+                    return;
                 case 0xE0: // Pitch Bend Change
                     if (bytes.length > 2) {
                         var msb = bytes[1] & 0x7F;
                         var lsb = bytes[2] & 0x7F;
                         this.emit('pitch-bend', channel, (msb << 7) + lsb);
                     }
-                    break;
+                    return;
                 default:
                     this.emit('unknown-message', bytes);
             }
