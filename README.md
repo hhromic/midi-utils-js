@@ -1,22 +1,20 @@
 MIDI Utilities for JavaScript
 =============================
 
-This is a very simple collection of MIDI data utilities for JavaScript. They are meant to work with raw MIDI data (e.g. bytes), not with MIDI devices themselves. These libraries do not depend on any 3rd-party library so far.
+This is a very simple collection of MIDI data utilities for JavaScript. They are meant to process raw MIDI data, i.e. bytes, not with MIDI devices themselves. These libraries do not depend on any 3rd-party libraries so far (with the exception of an EventEmitter when not using Node).
 
 For connecting to MIDI devices and receiving/sending MIDI data, I can suggest the very good [node-midi](http://github.com/justinlatimer/node-midi) Node library. Check it out!
 
-For using any of the libraries, you simply need to include the relevant JavaScript file into your HTML page (or 'require' it if using Node). For example:
+To use any of the libraries you simply need to include the relevant JavaScript file into your HTML page (or 'require' it if using Node). For example:
 
 ```html
 <script src="midiparser.js"></script>
 <script src="mididamperpedal.js"></script>
 <script src="midisostenutopedal.js"></script>
 <script src="midisoftpedal.js"></script>
-<script src="midicolors.js"></script>
-<script src="midileds.js"></script>
 ```
 
-Please note that most of the classes are *event emitters* and rely on an existing EventEmitter object implementation to inherit/use. For example if you want to use the MidiParser:
+Please note that most of the classes are *event emitters* and rely on an existing EventEmitter object implementation to inherit/use. For example if you want to use the MidiParser class:
 
 * If using Node, this object comes built-in and can be easily used like this:
 
@@ -36,54 +34,23 @@ var mp = new MidiParser();
 MidiParser class
 ----------------
 
-A very simple event-driven Midi messages parser for JavaScript. This class parses raw MIDI bytes arrays (must be ```Uint8Array``` objects) and generates relevant higher-level MIDI events. You must add your own event handlers for it to do anything useful. The following example illustrates all events that can be handled in the current version:
+A very simple event-driven MIDI messages parser for JavaScript. This class parses raw MIDI bytes arrays (must be ```Uint8Array``` objects) and generates relevant higher-level MIDI events. You must add your own event handlers for it to do anything useful. The following example illustrates how to handle some events:
 
 ```javascript
 var mp = new MidiParser();
-mp.on('note-off', function (channel, note) {
-    console.log('Note-Off on channel %d. Note: %d', channel, note);
+mp.on('note-off', function (channel, note, velocity) {
+    console.log('Note-Off on channel %d. Note: %d with velocity %d',
+        channel, note, velocity);
 });
 mp.on('note-on', function (channel, note, velocity) {
     console.log('Note-On on channel %d. Note %d with velocity %d',
         channel, note, velocity);
-});
-mp.on('key-pressure', function (channel, note, pressure) {
-    console.log('Key pressure on channel %d. Note %d with pressure %d',
-        channel, note, pressure);
-});
-mp.on('program-change', function (channel, number) {
-    console.log('Program Change on channel %d. Number: %d',
-        channel, number);
-});
-mp.on('channel-pressure', function (channel, pressure) {
-    console.log('Channel pressure on channel %d. Pressure %d',
-        channel, pressure);
-});
-mp.on('pitch-wheel', function (channel, position) {
-    console.log('Pitch Wheel on channel %d. Position: %d',
-        channel, position);
 });
 mp.on('damper-off', function (channel) {
     console.log('Damper Pedal released on channel %d', channel);
 });
 mp.on('damper-on', function (channel) {
     console.log('Damper Pedal pressed on channel %d', channel);
-});
-mp.on('sostenuto-off', function (channel) {
-    console.log('Sostenuto Pedal released on channel %d', channel);
-});
-mp.on('sostenuto-on', function (channel) {
-    console.log('Sostenuto Pedal pressed on channel %d', channel);
-});
-mp.on('soft-off', function (channel) {
-    console.log('Soft Pedal released on channel %d', channel);
-});
-mp.on('soft-on', function (channel) {
-    console.log('Soft Pedal pressed on channel %d', channel);
-});
-mp.on('unknown', function (byte1, byte2, byte3) {
-    console.log('Unknown event with bytes [%d, %d, %d].',
-        byte1, byte2, byte3);
 });
 
 // Test some events
@@ -92,11 +59,22 @@ mp.parse(new Uint8Array([177, 64, 127]));
 mp.parse(new Uint8Array([145, 36, 0]));
 ```
 
-**Note:** this parser handles the special case of a ```note-on``` with velocity = 0 as a ```note-off``` event, this way you do not need to worry about semantics. See the third example test event.
+**Note:** this parser handles the special case of a ```note-on``` event with zero velocity as a ```note-off``` event, this way you do not need to worry about semantics. See the output from the third example test.
 
-The events ```key-pressure``` and ```channel-pressure``` are commonly known as _Poly Aftertouch_ and _Aftertouch_ respectively in the MIDI world.
+The full list of supported MIDI events and handler arguments is below:
 
-The MidiParser class also provides convenient standard General Midi 1 (GM1) note -> name, drum note -> name, program number -> name and program number -> family name static mappings. For example:
+* ```note-off``` and ```note-on``` with (channel, note, velocity) arguments.
+* ```key-pressure``` with (channel, note, pressure) arguments. This event is commonly known as _Poly Aftertouch_ in the MIDI world.
+* ```program-change``` with (channel, number) arguments.
+* ```channel-pressure``` with (channel, pressure) arguments. This event is commonly known as _Aftertouch_ in the MIDI world.
+* ```pitch-bend``` with (channel, value) arguments. The value already merges the MSB and LSB bytes, providing the full 14 bits bend value.
+* ```bank-select```, ```mod-wheel```, ```breath-controller```, ```foot-controller```, ```portamento-time```, ```volume```, ```balance```, ```pan```, ```expression-controller```, ```effect-control-1```, ```effect-control-2```, ```gp-controller-1```, ```gp-controller-2```, ```gp-controller-3```, ```gp-controller-4```, ```bank-select-fine```, ```mod-wheel-fine```, ```breath-controller-fine```, ```foot-controller-fine```, ```portamento-time-fine```, ```volume-fine```, ```balance-fine```, ```pan-fine```, ```expression-controller-fine```, ```effect-control-1-fine```, ```effect-control-2-fine```, ```gp-controller-1-fine```, ```gp-controller-2-fine```, ```gp-controller-3-fine```, ```gp-controller-4-fine```, ```sound-variation```, ```timbre-intensity```, ```release-time```, ```attack-time```, ```brightness```, ```decay-time```, ```vibrato-rate```, ```vibrato-depth```, ```vibrato-delay```, ```snd-controller-10```, ```gp-controller-5```, ```gp-controller-6```, ```gp-controller-7```, ```gp-controller-8```, ```portamento```, ```reverb-depth```, ```tremolo-depth```, ```chorus-depth```, ```detune-depth``` and ```phaser-depth``` with (channel, value) arguments. These are all Control Change (CC) MIDI events.
+* ```damper-off```, ```damper-on```, ```portamento-off```, ```portamento-on```, ```sostenuto-off```, ```sostenuto-on```, ```soft-off```, ```soft-on```, ```legato-off```, ```legato-on```, ```hold2-off``` and ```hold2-on``` with (channel) argument. These are all binary valued Control Change (CC) MIDI events commonly associated with instrument pedals.
+* ```all-sound-off```, ```reset-all-controllers``` and ```all-notes-off``` with (channel) argument. These are all Control Change (CC) MIDI events.
+* ```unknown-control-change``` with (channel, control, value) arguments. If a Control Change (CC) MIDI event is received but can not be parsed, it is passed cleanly using this event handler.
+* ```unknown-message``` with (bytes) argument. If the MIDI bytes array can not be parsed, it is passed cleanly using this event handler.
+
+The MidiParser class also provides convenient standard General Midi 1 (GM1) note-to-name, drumNote-to-name, programNumber-to-name and programNumber-to-familyName static mappings. For example:
 
 ```javascript
 var mp = new MidiParser();
@@ -159,7 +137,7 @@ mp.parse(new Uint8Array([176, 64, 0]));
 ```
 
 MidiSostenutoPedal class
----------------------
+------------------------
 
 A very simple event-driven Midi Sostenuto Pedal processor for JavaScript. This class emulates the behaviour of a Sostenuto Pedal by controlling the passage of ```note-on``` and ```note-off``` messages. This pedal is detailed in [this Wikipedia article](http://en.wikipedia.org/wiki/Sostenuto).
 
@@ -211,7 +189,7 @@ mp.parse(new Uint8Array([176, 66, 0]));
 ```
 
 MidiSoftPedal class
----------------------
+-------------------
 
 A very simple event-driven Midi Soft Pedal processor for JavaScript. This class emulates the behaviour of a Soft Pedal by controlling the passage of ```note-on``` messages. This pedal is detailed in [this Wikipedia article](http://en.wikipedia.org/wiki/Soft_pedal).
 
@@ -263,84 +241,6 @@ mp.parse(new Uint8Array([144, 24, 0]));
 ```
 
 **Note:** the ```note-on``` event from the soft pedal will have the modified velocities if the pedal is pressed.
-
-MidiColors class
-----------------
-
-A very simple Midi notes to colors mapper for JavaScript. This class provides color mappings to MIDI notes, according to different mapping algorithms and color tables. Please see the following example usage:
-
-```javascript
-var mc = new MidiColors();
-
-// Get available color mapper algorithms and color maps
-var colorMappers = mc.getColorMappers();
-var colorMaps = mc.getColorMaps();
-
-// Set a particular combination of the above
-mc.setColorMapper('color-map');
-mc.setColorMap('jameson1884'); // use the 'id' attribute given by getColorMaps()
-
-// Some mapper algorithms work over note ranges
-// Standard 88-keys piano range: 0x15 <= note <= 0x6C
-mc.setNoteMin(0x15);
-mc.setNoteMax(0x6C);
-
-// Then map some colors to some notes
-// Hint: some mapping algorithms consider the velocity value too
-// RGB stands for (red,green,blue) and HSL for (hue,saturation,lightness)
-var col1 = mc.mapNoteRGB(0x18, 0x64); // arguments: note, velocity
-var col2 = mc.mapNoteHSL(0x18, 0x7F);
-```
-
-The available color mapping algorithms are as follows:
-
-* ```color-map```: map colors according to the configured color map. The lightness is scaled according to the velocity value of the note.
-* ```color-map-fixed```: same as the above, but a fixed lightness is used instead of a velocity-based lightness.
-* ```rainbow```: map colors according to a generated rainbow coloring pattern. The lightness is scaled according to the velocity value of the note. This algorithm maps the rainbow range according to the configured min/max note values. The color map setting has no effect.
-* ```rainbow-fixed```: same as the above, but a fixed lightness is used instead of a velocity-based lightness.
-
-More information about the color maps can be found in [this website](http://rhythmiclight.com/archives/ideas/colorscales.html). These color scales were transcribed by [this work](http://mudcu.be/midi-js/js/MusicTheory.Synesthesia.js). Thanks for that!
-
-MidiLeds class
---------------
-
-A very simple MIDI to RGB LED strip controller for JavaScript. This class computes RGB values for a strip of LEDs using MIDI ```note-on``` and ```note-off``` messages using two respective MidiColors instances. The controller also can apply a note offset to each input ```note-on``` and configure a velocity to be used for ```note-off``` events.  Please see the following example usage:
-
-```javascript
-// First some MidiColors mappings
-var mcNoteOn = new MidiColors();
-var mcNoteOff = new MidiColors();
-mcNoteOn.setNoteMin(0x15); mcNoteOff.setNoteMin(0x15);  // 88-keys
-mcNoteOn.setNoteMax(0x6C); mcNoteOff.setNoteMax(0x6C);  // piano setting
-mcNoteOn.setColorMapper('rainbow');   // Let's try a rainbow effect
-mcNoteOff.setColorMapper('rainbow');  // If OffVelocity=0, this doesn't matter
-
-// Second, the MidiLedsController with basic raw console output
-var mlc = new MidiLedsController(88, mcNoteOn, mcNoteOff);
-mlc.setNoteOffset(0x15);   // Minimum note for an 88-keys piano
-mlc.setOffVelocity(0x0A);  // If >0x00: LEDs will be 'off' with dimmed light
-mlc.on('led-output', function (led, r, g, b) {
-    console.log('LED %d is now R=%d, G=%d, B=%d.', led, r, g, b);
-    // Your real RGB LED strip can be driven here...
-});
-
-// Finally a MidiParser to send some events (pedals can be added too!)
-var mp = new MidiParser();
-mp.on('note-on', function (channel, note, velocity) {
-    mlc.noteOn(channel, note, velocity);
-});
-mp.on('note-off', function (channel, note) {
-    mlc.noteOff(channel, note);
-});
-
-// Test some events, check the LEDs output values
-mp.parse(new Uint8Array([144, 30, 100]));
-mp.parse(new Uint8Array([144, 60, 80]));
-mp.parse(new Uint8Array([144, 90, 127]));
-mp.parse(new Uint8Array([144, 30, 0]));
-mp.parse(new Uint8Array([144, 60, 0]));
-mp.parse(new Uint8Array([144, 90, 0]));
-```
 
 Acknowledgements
 ----------------
