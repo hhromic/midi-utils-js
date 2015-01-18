@@ -1,14 +1,22 @@
 /**
- * MidiSoftPedal v1.0 - A very simple event-driven Midi Soft Pedal processor for JavaScript.
- * Hugo Hromic - http://github.com/hhromic
+ * MidiSoftPedal v1.0 - https://github.com/hhromic/midi-utils-js
+ * A very simple event-driven MIDI soft pedal emulator for JavaScript.
  * MIT license
+ * Hugo Hromic - http://github.com/hhromic
+ *
+ * @requires EventEmitter
  */
 /*jslint nomen: true*/
 
-(function () {
+;(function () {
     'use strict';
 
-    // Constructor
+    /**
+     * Represents a MIDI soft pedal emulator.
+     *
+     * @public
+     * @constructor
+     */
     function MidiSoftPedal() {
         EventEmitter.call(this);
         this._softenFactor = 2/3;
@@ -18,31 +26,59 @@
     // We are an event emitter
     MidiSoftPedal.prototype = Object.create(EventEmitter.prototype);
 
-    // Prototype shortcut
+    // Shortcuts to improve speed and size
     var proto = MidiSoftPedal.prototype;
 
-    // Get the softenf factor for the pedal
+    /**
+     * Gets the current soften factor of the pedal.
+     *
+     * @public
+     * @returns {number} - the current soften factor [0,1].
+     */
     proto.getSoftenFactor = function () {
         return this._softenFactor;
     }
 
+    /**
+     * Sets the soften factor for the pedal.
+     *
+     * @public
+     * @param {number} softenFactor - the soften factor to set [0,1].
+     */
     // Set the soften factor [0,1] for the pedal
     proto.setSoftenFactor = function (softenFactor) {
         if (softenFactor >= 0 && softenFactor <= 1)
             this._softenFactor = softenFactor;
     }
 
-    // Simulate pressing the soft pedal
+    /**
+     * Simulates pressing the soft pedal.
+     *
+     * @public
+     * @param {number} channel - the MIDI channel.
+     */
     proto.press = function (channel) {
         this._pressed |= 1 << (channel & 0xF);
     }
 
-    // Simulate releasing the soft pedal
+    /**
+     * Simulates releasing (depressing) the soft pedal.
+     *
+     * @public
+     * @param {number} channel - the MIDI channel.
+     */
     proto.release = function (channel) {
         this._pressed &= ~(1 << (channel & 0xF));
     }
 
-    // Process a Midi Note On message
+    /**
+     * Processes and forwards a MIDI Note-On message.
+     *
+     * @public
+     * @param {number} channel - the MIDI channel.
+     * @param {number} note - the MIDI note.
+     * @param {number} velocity - the velocity of the MIDI note.
+     */
     proto.noteOn = function (channel, note, velocity) {
         if ((this._pressed >> (channel & 0xF)) & 1)
             this.emit('note-on', channel, note, Math.round(velocity * this._softenFactor));
