@@ -1,14 +1,17 @@
 /**
- * MidiParser v1.0 - A very simple event-driven Midi messages parser for JavaScript.
- * Hugo Hromic - http://github.com/hhromic
+ * MidiParser v1.0 - https://github.com/hhromic/midi-utils-js
+ * A very simple event-driven MIDI data parser for JavaScript.
  * MIT license
+ * Hugo Hromic - http://github.com/hhromic
  *
- * Messages: http://www.midi.org/techspecs/midimessages.php
+ * MIDI Messages: http://www.midi.org/techspecs/midimessages.php
  * GM1 Sound Set: http://www.midi.org/techspecs/gm1sound.php
+ *
+ * @requires EventEmitter
  */
 /*jslint nomen: true*/
 
-(function () {
+;(function () {
     'use strict';
 
     // GM1 drum note names
@@ -346,7 +349,12 @@
         0x7F: 'Gunshot',
     };
 
-    // Constructor
+    /**
+     * Represents a MIDI data parser.
+     *
+     * @public
+     * @constructor
+     */
     function MidiParser() {
         EventEmitter.call(this);
     }
@@ -354,43 +362,72 @@
     // We are an event emitter
     MidiParser.prototype = Object.create(EventEmitter.prototype);
 
-    // Prototype shortcut
+    // Shortcuts to improve speed and size
     var proto = MidiParser.prototype;
 
-    // Get a GM1 drum note name
+    /**
+     * Gets the GM1 drum note name for a given MIDI note.
+     *
+     * @public
+     * @param {number} note - the MIDI note to get the name for.
+     * @returns {string} - the GM1 drum note name for the MIDI note.
+     */
     proto.getGM1DrumNoteName = function (note) {
         return _gm1drums[note];
     }
 
-    // Get a GM1 note name
+    /**
+     * Gets the GM1 instrument note name for a given MIDI note.
+     *
+     * @public
+     * @param {number} note - the MIDI note to get the name for.
+     * @returns {string} - the GM1 instrument note name for the MIDI note.
+     */
     proto.getGM1NoteName = function (note) {
         return _gm1notes[note];
     }
 
-    // Get a GM1 program family name
-    proto.getGM1FamilyName = function (number) {
-        return _gm1families[Math.floor(number / 0x8) * 0x8];
+    /**
+     * Gets the GM1 program family name for a given MIDI program number.
+     *
+     * @public
+     * @param {number} programNumber - the MIDI program number to get the family name for.
+     * @returns {string} - the GM1 program family name for the MIDI program number.
+     */
+    proto.getGM1FamilyName = function (programNumber) {
+        return _gm1families[Math.floor(programNumber / 0x8) * 0x8];
     }
 
-    // Get a GM1 program name
-    proto.getGM1ProgramName = function (number) {
-        return _gm1programs[number];
+    /**
+     * Gets the GM1 program name for a given MIDI program number.
+     *
+     * @public
+     * @param {number} programNumber - the MIDI program number to get the name for.
+     * @returns {string} - the GM1 program name for the MIDI program number.
+     */
+    proto.getGM1ProgramName = function (programNumber) {
+        return _gm1programs[programNumber];
     }
 
-    // Parse the bytes of a Midi message and emit parsing events
+    /**
+     * Parses a raw MIDI message into higher-level MIDI events.
+     *
+     * @public
+     * @param {Uint8Array} bytes - the raw MIDI message bytes to parse.
+     */
     proto.parse = function (bytes) {
         if (bytes instanceof Uint8Array && bytes.length > 0) {
             var status = bytes[0] & 0xF0;
             var channel = bytes[0] & 0x0F;
             switch (status) {
-                case 0x80: // Note Off event
+                case 0x80: // Note-Off event
                     if (bytes.length > 1) {
                         var note = bytes[1] & 0x7F;
                         var velocity = bytes[2] & 0x7F;
                         this.emit('note-off', channel, note, velocity);
                     }
                     return;
-                case 0x90: // Note On event
+                case 0x90: // Note-On event
                     if (bytes.length > 2) {
                         var note = bytes[1] & 0x7F;
                         var velocity = bytes[2] & 0x7F;
