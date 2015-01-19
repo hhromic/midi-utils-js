@@ -44,7 +44,7 @@ To create or update the combined minified bundle, you can use [UglifyJS](https:/
 
 ```shell
 $ uglifyjs --comments --mangle sort=true --compress --output midiutils.min.js --stats \
-    header.js midiparser.js mididamperpedal.js midisoftpedal.js midisostenutopedal.js
+    copyright.js midiparser.js mididamperpedal.js midisoftpedal.js midisostenutopedal.js
 ```
 
 MidiParser class
