@@ -14,7 +14,7 @@ To use any of the included classes you simply need to include the relevant JavaS
 <script src="midisoftpedal.js"></script>
 ```
 
-*OR* you can use the combined minified bundle that includes everything (recommended!):
+**OR** you can use the combined minified bundle that includes everything (recommended!):
 
 ```html
 <script src="midiutils.min.js"></script>
